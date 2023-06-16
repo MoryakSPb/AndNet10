@@ -1,0 +1,19 @@
+﻿@import "_functions.scss";
+
+$primary: #6f42c1;
+
+@import "_variables.scss";
+@import "_variables-dark.scss";
+
+$theme-colors: map-merge($theme-colors, ( "primary": $purple ));
+
+@import "_maps.scss";
+@import "_mixins.scss";
+@import "_root.scss";
+
+@import "bootstrap.scss";
+
+.validation-message {
+    @extend .invalid-feedback;
+    display: block;
+}

@@ -1,0 +1,137 @@
+﻿@attribute [Authorize(Roles = "member")]
+@page "/player/{id:int}/"
+
+
+<div class="accordion mb-3" id="playerAccordion">
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#awardCollapse" @onclick="async () => await GetAwards()">
+                Награды
+            </button>
+        </h2>
+        <div id="awardCollapse" class="accordion-collapse collapse" data-bs-parent="#playerAccordion">
+            <div class="accordion-body">
+                @if (Awards is not null)
+                {
+                    <div class="d-flex flex-row align-items-center justify-content-center mb-3">
+                        @foreach ((AwardType type, int count) in GetCountsByType)
+                        {
+                            <AwardTypeCount Type="type" Count="count"/>
+                        }
+                    </div>
+
+                    <div class="accordion accordion-flush" id="accordionAwardDescriptions">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#awardDescriptionCollapse">
+                                    Подробно
+                                </button>
+                            </h2>
+                            <div id="awardDescriptionCollapse" class="accordion-collapse collapse" data-bs-parent="#accordionAwardDescriptions">
+                                <table class="table">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col">Тип</th>
+                                        <th scope="col">Дата выдачи</th>
+                                        <th scope="col">Выдал</th>
+                                        <th scope="col">Описание</th>
+                                        <th scope="col">Документ</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    @foreach (Award award in Awards)
+                                    {
+                                        <tr>
+                                            <th scope="row">@AwardRules.Names[award.AwardType]</th>
+                                            <td>@award.IssueDate.ToString("d")</td>
+                                            <td>
+                                                @if (award.IssuerId.HasValue)
+                                                {
+                                                    <a href="player/@award.IssuerId.Value">@_players[award.IssuerId.Value].ToString()</a>
+                                                }
+                                                else
+                                                {
+                                                    <span>—</span>
+                                                }
+                                            </td>
+                                            <td>@award.Description</td>
+                                            <td>
+                                                <a href="/document/@(award.DecisionId)">№@award.DecisionId</a>
+                                            </td>
+                                        </tr>
+                                    }
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                Экспедиции
+            </button>
+        </h2>
+        <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#playerAccordion">
+            <div class="accordion-body">
+                <strong>Это тело аккордеона второго элемента.</strong> По умолчанию он скрыт, пока плагин свертывания не добавит соответствующие классы, которые мы используем для стилизации каждого элемента. Эти классы управляют общим внешним видом, а также отображением и скрытием с помощью переходов CSS. Вы можете изменить все это с помощью собственного CSS или переопределить наши переменные по умолчанию. Также стоит отметить, что практически любой HTML может быть помещен в <code>.accordion-body</code>, хотя переход ограничивает переполнение.
+            </div>
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                Документация
+            </button>
+        </h2>
+        <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#playerAccordion">
+            <div class="accordion-body">
+                <strong>Это тело аккордеона третьего элемента.</strong> По умолчанию оно скрыто, пока плагин свертывания не добавит соответствующие классы, которые мы используем для стилизации каждого элемента. Эти классы управляют общим внешним видом, а также отображением и скрытием с помощью переходов CSS. Вы можете изменить все это с помощью собственного CSS или переопределить наши переменные по умолчанию. Также стоит отметить, что практически любой HTML может быть помещен в <code>.accordion-body</code>, хотя переход ограничивает переполнение.
+            </div>
+        </div>
+    </div>
+</div>
+
+<LayoutSetter>
+    <Header>
+        @if (Model is not null)
+        {
+            <h1>@Model.Nickname</h1>
+        }
+    </Header>
+    <Aside>
+        <div class="d-flex flex-column mb-3">
+            @if (Model is null)
+            {
+                <InfoBlock Key="Загрузка…"/>
+            }
+            else
+            {
+                <InfoBlock Key="Имя" Value="@Model.RealName"/>
+                @if (Model is ClanPlayer clanPlayer)
+                {
+                    <InfoBlock Key="Счёт" Value="@clanPlayer.Score.ToString("F2")"/>
+                    <InfoBlock Key="Ранг" Value="@($"[{RankRules.Icons[clanPlayer.Rank]}] {RankRules.Names[clanPlayer.Rank]}")"/>
+                    <InfoBlock Key="Дата вступления" Value="@clanPlayer.JoinDate.ToString("d")"/>
+                    <InfoBlock Key="В резерве" Value="@(clanPlayer.OnReserve ? "Да" : "Нет")"/>
+                   @* <PlayerInfoBlock Key="Часовой пояс" Value="@(clanPlayer.)" />*@
+                }
+                @if (Model is ExternalPlayer externalPlayer)
+                {
+                    <InfoBlock Key="Отношение к клану" Value="@PlayerRules.RelationshipNames[externalPlayer.Relationship]"/>
+                }
+                @if (Model is FormerClanPlayer formerClanPlayer)
+                {
+                    <InfoBlock Key="Дата вступления" Value="@formerClanPlayer.JoinDate.ToString("d")"/>
+                    <InfoBlock Key="Дата прекращения членства" Value="@formerClanPlayer.LeaveDate.ToString("d")"/>
+                    <InfoBlock Key="Причина прекащения" Value="@PlayerRules.LeaveReasonNames[formerClanPlayer.LeaveReason]"/>
+                }
+            }
+
+        </div>
+    </Aside>
+</LayoutSetter>

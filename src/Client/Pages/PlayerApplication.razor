@@ -1,0 +1,151 @@
+﻿@page "/application"
+@layout MainLayoutWithoutAside
+
+<EditForm EditContext="editContext" OnSubmit="OnSubmit">
+    <DataAnnotationsValidator/>
+    <div class="mb-3">
+        <label for="nicknameInput" class="form-label text-primary-emphasis">
+            <strong>Никнейм</strong>
+        </label>
+        <InputText type="text" class="form-control" maxlength="24" id="nicknameInput" @bind-Value="Model.Nickname"/>
+        <ValidationMessage For="@(() => Model.Nickname)"/>
+    </div>
+    <div class="mb-3">
+        <label for="realnameInput" class="form-label">Имя</label>
+        <InputText type="text" class="form-control" id="realnameInput" maxlength="64" @bind-Value="Model.RealName"/>
+        <ValidationMessage For="@(() => Model.RealName)"/>
+        <div class="form-text">
+            Вы можете написать как полное имя, так и предпочтительную форму краткого
+        </div>
+    </div>
+    <div class="mb-3">
+        <label for="discordInput" class="form-label text-primary-emphasis">
+            <strong>Имя пользователя в Discord</strong>
+        </label>
+        <div class="input-group">
+            <button class="btn btn-primary" type="button">
+                <i class="bi bi-question-square"></i>
+            </button>
+            <InputText type="text" class="form-control" id="discordInput" @bind-Value="Model.DiscordUsername"/>
+        </div>
+        @if (Model.DiscordId > 0ul)
+        {
+            <div class="valid-feedback" style="display: block">
+                Распознанный ID профиля: @Model.DiscordId.ToString()
+            </div>
+        }
+        <ValidationMessage For="@(() => Model.DiscordUsername)"/>
+    </div>
+    <div class="mb-3">
+        <label for="steamInput" class="form-label text-primary-emphasis">
+            <strong>Ссылка на профиль Steam</strong>
+        </label>
+        <div class="input-group">
+            <button class="btn btn-primary" type="button">
+                <i class="bi bi-question-square"></i>
+            </button>
+            <InputText type="url" class="form-control" id="steamInput" @bind-Value="Model.SteamLink"/>
+        </div>
+
+
+        @if (Model.SteamId > 0ul)
+        {
+            <div class="valid-feedback" style="display: block">
+                Распознанный ID профиля: @Model.SteamId.ToString()
+            </div>
+        }
+        <ValidationMessage For="@(() => Model.SteamLink)"/>
+    </div>
+    <div class="mb-3">
+        <label for="hoursInput" class="form-label">Количество сыгранных часов в Space Engineers</label>
+        <InputNumber TValue="int?" type="number" min="0" class="form-control" id="hoursInput" @bind-Value="Model.Hours"/>
+        <ValidationMessage For="@(() => Model.Hours)"/>
+    </div>
+    <div class="mb-3">
+        <label for="ageInput" class="form-label">Возраст</label>
+        <InputNumber TValue="int?" type="number" min="0" max="255" class="form-control" id="ageInput" @bind-Value="Model.Age"/>
+        <ValidationMessage For="@(() => Model.Age)"/>
+    </div>
+    <div class="mb-3">
+        <label for="timezoneInput" class="form-label">Часовой пояс</label>
+        <div class="input-group">
+            <button class="btn btn-primary" type="button" title="Определить часовой пояс" @onclick="() => Model.TimeZoneId = TimeZoneInfo.Local.Id">
+                <i class="bi bi-geo-alt-fill"></i>
+            </button>
+            <button class="btn btn-secondary" type="button" title="Установить часовой пояс UTC (по Гринвичу)" @onclick="() => Model.TimeZoneId = TimeZoneInfo.Utc.Id">
+                <i class="bi bi-globe-europe-africa"></i>
+            </button>
+            <InputSelect TValue="string" class="form-select" @bind-Value="Model.TimeZoneId">
+                <option>(нет)</option>
+                @foreach (var timeZone in TimeZoneInfo.GetSystemTimeZones().Select(x => new { x.Id, x.DisplayName, Offset = x.GetUtcOffset(DateTime.UtcNow) }).OrderBy(x => x.Offset))
+                {
+                    <option value="@timeZone.Id">@timeZone.DisplayName</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => Model.TimeZoneId)"/>
+        </div>
+
+
+    </div>
+    <div class="mb-3">
+        <label for="recommendationInput" class="form-label">Откуда вы узнали о нас? Кто порекомендовал вступить к нам?</label>
+        <InputText type="text" class="form-control" id="recommendationInput" @bind-Value="Model.Recommendation"/>
+        <ValidationMessage For="@(() => Model.Recommendation)"/>
+    </div>
+    <div class="mb-3">
+        <label for="descriptionInput" class="form-label">Дополнительная информация</label>
+        <InputTextArea class="form-control" id="descriptionInput" rows="3" @bind-Value="Model.Description"></InputTextArea>
+        <ValidationMessage For="@(() => Model.Description)"/>
+    </div>
+    <div class="form-check mb-3">
+        <InputCheckbox class="form-check-input" id="ruleInput" @bind-Value="Model.RulesAgreed"/>
+        <label class="form-check-label text-primary-emphasis" for="ruleInput">
+            С <a href="#" data-bs-toggle="modal" data-bs-target="#ruleModal">уставом клана в последней редакции</a> ознакомлен(а) и соглашаюсь следовать устанавливаемым им правилам
+        </label>
+        <ValidationMessage For="@(() => Model.RulesAgreed)"/>
+    </div>
+    <div class="d-grid gap-2 mb-3">
+        <button class="btn btn-primary" type="submit" data-bs-toggle="modal" data-bs-target="#resultModal">Отправить заявку на вступление в клан</button>
+    </div>
+</EditForm>
+
+<div class="modal" id="ruleModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                @if (Rules is not null)
+                {
+                    @Rules
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="resultModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                @ResultMessage
+            </div>
+            <div class="modal-footer">
+                <a href="/" onclick="location.reload()" class="btn btn-primary">На главную</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<LayoutSetter>
+    <Header>
+        <h1>Заявка в клан</h1>
+    </Header>
+    <Footer>
+
+    </Footer>
+</LayoutSetter>

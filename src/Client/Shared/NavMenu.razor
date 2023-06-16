@@ -1,0 +1,42 @@
+﻿<div class="container">
+    <a class="navbar-brand" href="#">
+        <img src="/images/and_logo_min.svg" alt="And" height="30">
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <div class="navbar-nav me-auto">
+            <a class="nav-link" href="/">Главная</a>
+            <a class="nav-link @(UserName is not null ? "" : "disabled")" href="/players">Игроки</a>
+            <a class="nav-link @(UserName is not null ? "" : "disabled")" href="/expeditions">Экспедиции</a>
+            <a class="nav-link disabled @(UserName is not null ? "" : "disabled")" href="/documents">База знаний</a>
+            <a class="nav-link disabled @(UserName is not null ? "" : "disabled")" href="/elections">Выборы</a>
+            <a class="nav-link disabled @(UserName is not null ? "" : "disabled")" href="/council">Совет</a>
+        </div>
+        <div class="navbar-nav">
+            @if (UserName is not null)
+            {
+                <a class="nav-link" href="/player/@PlayerId.ToString()">@UserName</a>
+                <a class="nav-link" href="/api/auth/logout">Выход</a>
+            }
+            else
+            {
+                <a class="nav-link" href="/login"> </a>
+                <div class="dropdown">
+                    <button class="nav-link" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Вход
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="api/auth/login?provider=Steam&returnUrl=%2F">Steam</a>
+                        </li>
+                        <li>
+                            <small class="dropdown-item-text text-muted">Только для участников клана</small>
+                        </li>
+                    </ul>
+                </div>
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,11 @@
+version: '3.4'
+
+services:
+  andnet.manager.server:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "80"
+  andnet.manager.database:
+    environment: 
+      - POSTGRES_HOST_AUTH_METHOD=trust

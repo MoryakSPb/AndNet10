@@ -1,0 +1,104 @@
+﻿@page "/players"
+@layout MainLayoutWithoutAside
+
+<div class="input-group d-flex flex-row mb-3">
+    <input type="search" class="form-control flex-fill" placeholder="Поиск…" @bind="@SearchString" @onkeydown="OnKeyDownSearch">
+    <button class="btn btn-secondary" @onclick="ClearSearch">
+        <i class="bi bi-x"></i>
+    </button>
+    <button class="btn btn-primary" @onclick="GetPlayers">
+        <i class="bi bi-search"></i>
+    </button>
+</div>
+<table class="table table-hover">
+    <thead>
+    <tr>
+        <th scope="col">№</th>
+        <th scope="col">Никнейм</th>
+        <th scope="col">Имя</th>
+        <th scope="col">Счёт</th>
+        <th scope="col">Ранг</th>
+    </tr>
+    </thead>
+    <tbody>
+    @if (Models is null)
+    {
+        <tr>
+            <th scope="row">Загрузка…</th>
+        </tr>
+    }
+    else
+    {
+        @foreach (Player player in Models)
+        {
+            <tr @onclick="() => ToPlayerPage(player.Id)">
+                <th scope="row">@player.Id</th>
+                <td>@player.Nickname</td>
+                <td>@player.RealName</td>
+                @if (player is ClanPlayer clanPlayer)
+                {
+                    <td>
+                        <code>@clanPlayer.Score.ToString("000.000")</code>
+                    </td>
+                    <td>@RankRules.Names[clanPlayer.Rank]</td>
+                }
+                else
+                {
+                    <td>—</td>
+                    <td>—</td>
+                }
+
+            </tr>
+        }
+        @for (int i = 0; i < _emptyNeed; i++)
+        {
+            <tr>
+                <th scope="row">—</th>
+                <td/>
+                <td/>
+                <td/>
+                <td/>
+            </tr>
+        }
+    }
+    </tbody>
+</table>
+<nav class="d-flex flex-row justify-content-center">
+    <ul class="pagination">
+        <li class="page-item">
+            <button class="page-link  @(PreviousPageAvailable ? "" : "disabled")" @onclick="async () => await SetPage(1)">
+                <i class="bi bi-chevron-double-left"></i>
+            </button>
+        </li>
+        <li class="page-item">
+            <button class="page-link @(PreviousPageAvailable ? "" : "disabled")" @onclick="async () => await SetPage(Page - 1)">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+        </li>
+        @foreach (int i in Enumerable.Range(1, PagesCount))
+        {
+            <li class="page-item @(Page == i ? "disabled active" : "")">
+                <button class="page-link" @onclick="async () => await SetPage(i)">@i</button>
+            </li>
+        }
+        <li class="page-item">
+            <button class="page-link @(NextPageAvailable ? "" : "disabled")" @onclick="async () => await SetPage(Page + 1)">
+                <i class="bi bi-chevron-right"></i>
+            </button>
+        </li>
+        <li class="page-item">
+            <button class="page-link @(NextPageAvailable ? "" : "disabled")" @onclick="async () => await SetPage(PagesCount)">
+                <i class="bi bi-chevron-double-right"></i>
+            </button>
+        </li>
+    </ul>
+</nav>
+
+<LayoutSetter>
+    <Header>
+
+    </Header>
+    <Footer>
+
+    </Footer>
+</LayoutSetter>

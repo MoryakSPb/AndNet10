@@ -1,0 +1,23 @@
+﻿@inherits MainLayout
+
+<CascadingValue Value="this">
+    <div class="page d-flex flex-column" data-bs-theme="dark">
+        <nav class="navbar navbar-expand-lg">
+            <NavMenu/>
+        </nav>
+
+        <main class="container">
+            <header class="row">
+                @Header
+            </header>
+            <div class="row" style="min-height: 1vh">
+                <section class="col-12 content px-4">
+                    @Body
+                </section>
+            </div>
+            <footer class="row">
+                @Footer
+            </footer>
+        </main>
+    </div>
+</CascadingValue>

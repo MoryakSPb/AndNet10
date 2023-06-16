@@ -1,0 +1,72 @@
+﻿@page "/expedition/{id:int}/"
+<div class="accordion mb-3" id="playerAccordion">
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#awardCollapse">
+                Состав
+            </button>
+        </h2>
+        <div id="awardCollapse" class="accordion-collapse collapse" data-bs-parent="#playerAccordion">
+            <div class="accordion-body">
+                @if (Expedition?.Players is not null)
+                {
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th scope="col">№</th>
+                            <th scope="col">Игрок</th>
+                            <th scope="col">Статус</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (Player member in Members)
+                        {
+                            <tr>
+                                <th scope="row">@member.Id</th>
+                                <td>
+                                    <a href="player/@member.Id">@member.ToString()</a>
+                                </td>
+                                <td>@(member.Id == Expedition.CommanderId ? "Командир" : "Участник")</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                Документация
+            </button>
+        </h2>
+        <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#playerAccordion">
+            <div class="accordion-body">
+                <strong>Это тело аккордеона третьего элемента.</strong> По умолчанию оно скрыто, пока плагин свертывания не добавит соответствующие классы, которые мы используем для стилизации каждого элемента. Эти классы управляют общим внешним видом, а также отображением и скрытием с помощью переходов CSS. Вы можете изменить все это с помощью собственного CSS или переопределить наши переменные по умолчанию. Также стоит отметить, что практически любой HTML может быть помещен в <code>.accordion-body</code>, хотя переход ограничивает переполнение.
+            </div>
+        </div>
+    </div>
+</div>
+
+<LayoutSetter>
+    <Header>
+
+    </Header>
+    <Aside>
+        <div class="d-flex flex-column mb-3">
+            @if (Expedition is null || Members is null)
+            {
+                <InfoBlock Key="Загрузка…"/>
+            }
+            else
+            {
+                <InfoBlock Key="Номер" Value="@Expedition.Id.ToString()"/>
+                <InfoBlock Key="Общий счёт" Value="@(Members.OfType<ClanPlayer>().Sum(x => x.Score).ToString("F2"))"/>
+                <InfoBlock Key="Дата начала" Value="@Expedition.StartDate.ToShortDateString()"/>
+                <InfoBlock Key="Дата конца" Value="@Expedition.EndDate.ToShortDateString()"/>
+            }
+
+        </div>
+    </Aside>
+</LayoutSetter>
