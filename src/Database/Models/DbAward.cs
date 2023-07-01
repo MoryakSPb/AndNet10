@@ -1,5 +1,4 @@
 ﻿using System.Text.Json.Serialization;
-using AndNet.Manager.Database.Models.Documentation.Decisions.Player;
 using AndNet.Manager.Database.Models.Player;
 using AndNet.Manager.Shared.Enums;
 using AndNet.Manager.Shared.Models;
@@ -27,7 +26,7 @@ public record DbAward
     public bool IsMarkedForDelete { get; set; }
 
     public int AwardSheetId { get; set; }
-    public DbDocumentDecisionCouncilPlayerAwardSheet AwardSheet { get; set; } = null!;
+    public DbDoc AwardSheet { get; set; } = null!;
 
     public override int GetHashCode()
     {
@@ -38,6 +37,8 @@ public record DbAward
     {
         return new(dbAward.Id, dbAward.IsMarkedForDelete,
             dbAward.Version, dbAward.AwardType, dbAward.IssueDate, dbAward.PlayerId, dbAward.IssuerId,
-            dbAward.Description, dbAward.AwardSheetId);
+            dbAward.Description, dbAward.AwardSheetId,
+            (double)dbAward.AwardType
+            * Math.Pow(2d, -Math.Truncate((DateTime.UtcNow - dbAward.IssueDate).TotalDays) / 365.25));
     }
 }

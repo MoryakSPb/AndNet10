@@ -1,24 +1,27 @@
-﻿/*using AndNet.Integration.Steam.Client.Models;
-using AndNet.Manager.Database;
+﻿using AndNet.Manager.Database;
+using AndNet.Manager.Database.Models.Player;
 using Microsoft.EntityFrameworkCore;
 using Quartz;
 
-namespace AndNet.Registry.Worker.Jobs;
+namespace AndNet.Manager.Server.Jobs;
 
 public class CalcPlayersJob : IJob
 {
-    private readonly RegistryDatabaseContext _databaseContext;
+    private readonly DatabaseContext _databaseContext;
+    private readonly ILogger<CalcPlayersJob> _logger;
 
-    public CalcPlayersJob(RegistryDatabaseContext databaseContext)
+    public CalcPlayersJob(DatabaseContext databaseContext, ILogger<CalcPlayersJob> logger)
     {
         _databaseContext = databaseContext;
+        _logger = logger;
     }
 
     public async Task Execute(IJobExecutionContext context)
     {
-        await Task.WhenAll((
-                await _databaseContext.ClanPlayers.Select(x => x.Id).ToArrayAsync().ConfigureAwait(false))
-            .Select(x => _calcPlayerClient.GetResponse<CalcPlayerResponse>(new() { PlayerId = x }))).ConfigureAwait(false);
+        _logger.LogInformation("Starting CalcPlayersJob…");
+        foreach (DbClanPlayer clanPlayer in _databaseContext.ClanPlayers.Include(x => x.Awards))
+            clanPlayer.CalcPlayer();
+        await _databaseContext.SaveChangesAsync().ConfigureAwait(false);
+        _logger.LogInformation("CalcPlayersJob is done");
     }
-}*/
-
+}

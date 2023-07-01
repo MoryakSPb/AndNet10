@@ -2,7 +2,6 @@
 using System.Net.Http.Json;
 using System.Text.Encodings.Web;
 using AndNet.Manager.Shared.Models;
-using Markdig;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
@@ -13,7 +12,6 @@ public partial class PlayerApplication : ComponentBase, IDisposable
 {
     private ValidationMessageStore _validationMessageStore;
     private EditContext? editContext;
-    public static MarkdownPipeline? MarkdownPipeline { get; set; }
 
     [Inject]
     public HttpClient HttpClient { get; set; } = null!;
@@ -21,12 +19,13 @@ public partial class PlayerApplication : ComponentBase, IDisposable
     [Inject]
     public IJSRuntime JsRuntime { get; set; } = null!;
 
+    [Inject]
+    public NavigationManager NavigationManager { get; set; } = null!;
+
     public RenderFragment Rules { get; set; }
 
     public PlayerApplicationRequest Model { get; set; } = new();
-    public bool IsSendEnabled { get; set; } = false;
-    public string? ResultMessage { get; set; }
-    public bool ToIndexAfterSendEnabled { get; set; } = false;
+    public bool IsSendEnabled { get; set; }
 
     public void Dispose()
     {
@@ -62,52 +61,58 @@ public partial class PlayerApplication : ComponentBase, IDisposable
     private async void EditContextOnOnFieldChanged(object? sender, FieldChangedEventArgs e)
     {
         if (editContext is null) return;
-        if (e.FieldIdentifier.FieldName == nameof(Model.SteamLink))
+        _validationMessageStore.Clear(e.FieldIdentifier);
+        switch (e.FieldIdentifier.FieldName)
         {
-            HttpResponseMessage steamResult =
-                await HttpClient.GetAsync($"api/Application/steam?url={UrlEncoder.Default.Encode(Model.SteamLink)}");
-            if (steamResult.IsSuccessStatusCode)
+            case nameof(Model.SteamLink):
             {
-                Model.SteamId = await steamResult.Content.ReadFromJsonAsync<ulong>();
-                _validationMessageStore.Clear(e.FieldIdentifier);
-            }
-            else
-            {
-                Model.SteamId = 0;
-                _validationMessageStore.Add(e.FieldIdentifier, "Неверная ссылка на профиль Steam");
-            }
+                HttpResponseMessage steamResult =
+                    await HttpClient.GetAsync(
+                        $"api/Application/steam?url={UrlEncoder.Default.Encode(Model.SteamLink)}");
+                if (steamResult.IsSuccessStatusCode)
+                {
+                    Model.SteamId = await steamResult.Content.ReadFromJsonAsync<ulong>();
+                }
+                else
+                {
+                    Model.SteamId = 0;
+                    _validationMessageStore.Add(e.FieldIdentifier, "Неверная ссылка на профиль Steam");
+                }
 
-            StateHasChanged();
-        }
-        else if (e.FieldIdentifier.FieldName == nameof(Model.DiscordUsername))
-        {
-            HttpResponseMessage discordResult =
-                await HttpClient.GetAsync(
-                    $"api/Application/discord?username={UrlEncoder.Default.Encode(Model.DiscordUsername)}");
-            if (discordResult.IsSuccessStatusCode)
-            {
-                Model.DiscordId = await discordResult.Content.ReadFromJsonAsync<ulong>();
-                _validationMessageStore.Clear(e.FieldIdentifier);
+                break;
             }
-            else
+            case nameof(Model.DiscordUsername):
             {
-                Model.DiscordId = 0;
-                _validationMessageStore.Add(e.FieldIdentifier, "Неверное имя пользователя Discord");
-            }
+                HttpResponseMessage discordResult =
+                    await HttpClient.GetAsync(
+                        $"api/Application/discord?username={UrlEncoder.Default.Encode(Model.DiscordUsername)}");
+                if (discordResult.IsSuccessStatusCode)
+                {
+                    Model.DiscordId = await discordResult.Content.ReadFromJsonAsync<ulong>();
+                }
+                else
+                {
+                    Model.DiscordId = 0;
+                    _validationMessageStore.Add(e.FieldIdentifier,
+                        "Пользователь Discord не найден на нашем сервере. Убедитесь, что вы присоединились к нашему серверу");
+                }
 
-            StateHasChanged();
+                break;
+            }
         }
+
+        editContext.IsModified(e.FieldIdentifier);
+        StateHasChanged();
     }
 
 
     private async void OnSubmit(EditContext context)
     {
-        ResultMessage = "Отправка…";
-        ToIndexAfterSendEnabled = false;
+        if (!context.Validate() || Model.DiscordId == 0 || Model.SteamId == 0) return;
+        IsSendEnabled = false;
         StateHasChanged();
-        if (!context.Validate()) return;
         HttpResponseMessage result = await HttpClient.PostAsJsonAsync("api/Application", Model);
-        ResultMessage = result.StatusCode switch
+        string? resultMessage = result.StatusCode switch
         {
             HttpStatusCode.OK =>
                 "Ваша заявка принята на рассмотрение! Обычно это занимает около суток. О результате вам сообщит наш бот в Discord!",
@@ -118,7 +123,7 @@ public partial class PlayerApplication : ComponentBase, IDisposable
             _ => result.ReasonPhrase
         };
         await JsRuntime.InvokeVoidAsync("localStorage.setItem", "Application.IsSent", true);
-        ToIndexAfterSendEnabled = true;
-        StateHasChanged();
+        NavigationManager.NavigateTo(
+            $"application/result?text={UrlEncoder.Default.Encode(resultMessage ?? string.Empty)}");
     }
 }

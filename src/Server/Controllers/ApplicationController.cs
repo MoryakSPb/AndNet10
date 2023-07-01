@@ -1,7 +1,6 @@
 ﻿using AndNet.Integration.Discord.Services;
 using AndNet.Integration.Steam;
 using AndNet.Manager.Database;
-using AndNet.Manager.Database.Models.Documentation.Decisions.Player;
 using AndNet.Manager.Database.Models.Player;
 using AndNet.Manager.Shared.Enums;
 using AndNet.Manager.Shared.Models;
@@ -58,6 +57,8 @@ public class ApplicationController : ControllerBase
     [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
     public async Task<ActionResult> Post([FromBody] PlayerApplicationRequest applicationRequest)
     {
+        applicationRequest.Nickname = applicationRequest.Nickname.Trim();
+        if (string.IsNullOrWhiteSpace(applicationRequest.Nickname)) return BadRequest();
         DbPlayer[] conflictPlayers = await _context.Players.AsNoTracking().Where(x =>
                 x.SteamId == applicationRequest.SteamId
                 || x.DiscordId
@@ -82,6 +83,9 @@ public class ApplicationController : ControllerBase
                         return Forbid();
                     case DbExternalPlayer externalPlayer:
                         player = externalPlayer;
+                        player.Nickname = applicationRequest.Nickname;
+                        player.DiscordId ??= applicationRequest.DiscordId;
+                        player.SteamId ??= applicationRequest.SteamId;
                         break;
                     default:
                         throw new("Invalid player type");
@@ -99,7 +103,7 @@ public class ApplicationController : ControllerBase
                         ? null
                         : applicationRequest.RealName,
                     Status = PlayerStatus.External,
-                    DetectionDate = DateTime.Now,
+                    DetectionDate = DateTime.UtcNow,
                     Relationship = PlayerRelationship.Unknown
                 };
                 _context.ExternalPlayers.Add(player);
@@ -118,7 +122,7 @@ public class ApplicationController : ControllerBase
             return BadRequest();
         }
 
-        DbDocumentDecisionCouncilPlayerAcceptApplication doc = new()
+        /*DbDocumentDecisionCouncilPlayerAcceptApplication doc = new()
         {
             Age = applicationRequest.Age,
             Player = player,
@@ -127,10 +131,10 @@ public class ApplicationController : ControllerBase
             Recommendation = applicationRequest.Recommendation,
             TimeZone = timeZoneInfo,
             Creator = player,
-            CreationDate = DateTime.Now
+            CreationDate = DateTime.UtcNow
         };
         doc.GenerateVotes(_context);
-        await _context.Documents.AddAsync(doc).ConfigureAwait(false);
+        await _context.Documents.AddAsync(doc).ConfigureAwait(false);*/
         await _context.SaveChangesAsync().ConfigureAwait(false);
         return Ok();
     }

@@ -7,12 +7,10 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
         <div class="navbar-nav me-auto">
-            <a class="nav-link" href="/">Главная</a>
             <a class="nav-link @(UserName is not null ? "" : "disabled")" href="/players">Игроки</a>
             <a class="nav-link @(UserName is not null ? "" : "disabled")" href="/expeditions">Экспедиции</a>
-            <a class="nav-link disabled @(UserName is not null ? "" : "disabled")" href="/documents">База знаний</a>
-            <a class="nav-link disabled @(UserName is not null ? "" : "disabled")" href="/elections">Выборы</a>
-            <a class="nav-link disabled @(UserName is not null ? "" : "disabled")" href="/council">Совет</a>
+            <a class="nav-link @(UserName is not null ? "" : "disabled")" href="/documents">Архив</a>
+            <a class="nav-link @(UserName is not null ? "" : "disabled")" href="/elections">Выборы</a>
         </div>
         <div class="navbar-nav">
             @if (UserName is not null)
@@ -29,7 +27,10 @@
                     </button>
                     <ul class="dropdown-menu">
                         <li>
-                            <a class="dropdown-item" href="api/auth/login?provider=Steam&returnUrl=%2F">Steam</a>
+                            <a class="dropdown-item" href="api/auth/login?provider=Discord&returnUrl=%2F"><i class="bi bi-discord"></i> Discord</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="api/auth/login?provider=Steam&returnUrl=%2F"><i class="bi bi-steam"></i> Steam</a>
                         </li>
                         <li>
                             <small class="dropdown-item-text text-muted">Только для участников клана</small>

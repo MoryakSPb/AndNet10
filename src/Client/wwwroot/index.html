@@ -10,6 +10,7 @@
           rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.4/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css" integrity="sha384-3UiQGuEI4TTMaFmGIZumfRPtfKQ3trwQE2JgosJxCnGmQpL/lJdjpcHkaaFwHlcI" crossorigin="anonymous">
+    <link href="_content/Blazor.Bootstrap/blazor.bootstrap.css" rel="stylesheet"/>
     <link href="css/app.css" rel="stylesheet"/>
     <link rel="icon" type="image/png" href="favicon.png"/>
     <!--<link href="AndNet.Manager.Client.styles.css" rel="stylesheet" />-->
@@ -25,8 +26,8 @@
 </div>
 
 <div id="blazor-error-ui">
-    An unhandled error has occurred.
-    <a href="" class="reload">Reload</a>
+    Возникла необработанная ошибка.
+    <a href="" class="reload">Перезагрузить</a>
     <a class="dismiss">🗙</a>
 </div>
 <script src="_framework/blazor.webassembly.js"></script>
@@ -35,19 +36,48 @@
         crossorigin="anonymous"></script>
 <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.js" integrity="sha384-G0zcxDFp5LWZtDuRMnBkk3EphCK1lhEf4UEyEM693ka574TZGwo4IWwS6QLzM/2t" crossorigin="anonymous"></script>
+<script src="_content/Blazor-ApexCharts/js/apex-charts.min.js"></script>
+<script src="_content/Blazor-ApexCharts/js/blazor-apex-charts.js"></script>
+<script src="_content/Blazor.Bootstrap/blazor.bootstrap.js"></script>
 <script>
-    window.renderMath = function () {
-        var tex = document.getElementsByClassName("math");
-        Array.prototype.forEach.call(tex, function (element) {
-            let content = element.textContent.trim();
-            if (content.startsWith(String.raw`\[`) || content.startsWith(String.raw`\(`)) {
-                content = content.slice(2, -2);
-            }
-            katex.render(content, element, {
-                displayMode: content[1] === '['
+        window.renderMath = function () {
+            var tex = document.getElementsByClassName("math");
+            Array.prototype.forEach.call(tex, function (element) {
+                let content = element.textContent.trim();
+                if (content.startsWith(String.raw`\[`) || content.startsWith(String.raw`\(`)) {
+                    content = content.slice(2, -2);
+                }
+                katex.render(content, element, {
+                    displayMode: content[1] === '['
+                });
             });
-        });
-    };
+        };
+    </script>
+<script>
+    Apex.chart = {
+        locales: [{
+            "name": "ru",
+            "options": {
+                "months": ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"],
+                "shortMonths": ["янв.", "февр.", "мар.", "апр.", "мая", "июн.", "июл.", "авг.", "сент.", "окт.", "нояб.", "дек."],
+                "days": ["воскресенье", "понедельник", "вторник", "среда", "четверг", "пятница", "суббота"],
+                "shortDays": ["вс", "пн", "вт", "ср", "чт", "пт", "сб"],
+                "toolbar": {
+                    "exportToSVG": "Загрузить SVG",
+                    "exportToPNG": "Загрузить PNG",
+                    "exportToCSV": "Загрузить CSV",
+                    "menu": "Меню",
+                    "selection": "Выбрать",
+                    "selectionZoom": "Выбрать масштаб",
+                    "zoomIn": "Увеличить",
+                    "zoomOut": "Уменьшить",
+                    "pan": "Перемещение",
+                    "reset": "Сборсить масштаб"
+                }
+            }
+        }],
+        defaultLocale: "ru"
+    }
 </script>
 </body>
 

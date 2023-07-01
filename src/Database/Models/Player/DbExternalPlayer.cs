@@ -17,6 +17,6 @@ public record DbExternalPlayer : DbPlayer
         return new(player.Id,
             player.Version, player.Status, player.Nickname, player.ToString(), player.RealName, player.DiscordId,
             player.SteamId,
-            player.DetectionDate, player.Relationship);
+            player.DetectionDate, player.TimeZone?.Id, player.Relationship);
     }
 }

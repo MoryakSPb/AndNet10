@@ -21,4 +21,14 @@ public static class PlayerRules
             .Add(PlayerLeaveReason.Suspend, "Приостановка")
             .Add(PlayerLeaveReason.Exile, "Изгнание")
             .Add(PlayerLeaveReason.Unknown, "Нет данных");
+
+    public static readonly IReadOnlyDictionary<PlayerStatisticsStatus, string> PlayerStatisticsStatusNames =
+        ImmutableSortedDictionary<PlayerStatisticsStatus, string>
+            .Empty
+            .Add(PlayerStatisticsStatus.Unknown, string.Empty)
+            .Add(PlayerStatisticsStatus.Offline, "Не в сети")
+            .Add(PlayerStatisticsStatus.Online, "В сети")
+            .Add(PlayerStatisticsStatus.InDifferentGame, "В другой игре")
+            .Add(PlayerStatisticsStatus.InSpaceEngineers, "В игре")
+            .Add(PlayerStatisticsStatus.InSpaceEngineersWithComrade, "В игре с кланом");
 }

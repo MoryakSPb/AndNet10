@@ -1,6 +1,6 @@
 ﻿namespace AndNet.Manager.Shared.Enums;
 
-public enum ProtocolType
+public enum ProtocolType : byte
 {
     Unknown,
     GeneralMeeting,

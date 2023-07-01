@@ -44,7 +44,7 @@ public class AwardRules
                 .Contains("ARM", StringComparison.OrdinalIgnoreCase)
                 ? 2.2250738585072014E-308
                 : double.Epsilon)
-            .Add(AwardType.Copper, double.NaN)
+            .Add(AwardType.Copper, 0.00)
             .Add(AwardType.SmallPenalty, 0.50)
             .Add(AwardType.MediumPenalty, 0.75)
             .Add(AwardType.LargePenalty, 1.00);

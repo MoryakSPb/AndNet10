@@ -19,6 +19,8 @@ Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-co
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AndNet.Migrator.AndNet7", "src\Migrator\AndNet.Migrator.AndNet7.csproj", "{199F6FFD-35A2-454F-BDD9-289C80E69C3F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AndNet.Manager.DocumentExecutor", "src\DocumentExecutor\AndNet.Manager.DocumentExecutor.csproj", "{DB189EC5-67A7-4690-87AE-B1EFA1DA55BB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +59,10 @@ Global
 		{199F6FFD-35A2-454F-BDD9-289C80E69C3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{199F6FFD-35A2-454F-BDD9-289C80E69C3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{199F6FFD-35A2-454F-BDD9-289C80E69C3F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB189EC5-67A7-4690-87AE-B1EFA1DA55BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB189EC5-67A7-4690-87AE-B1EFA1DA55BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB189EC5-67A7-4690-87AE-B1EFA1DA55BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB189EC5-67A7-4690-87AE-B1EFA1DA55BB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

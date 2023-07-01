@@ -31,6 +31,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Database\AndNet.Manager.Database.csproj" />
+		<ProjectReference Include="..\DocumentExecutor\AndNet.Manager.DocumentExecutor.csproj" />
 	</ItemGroup>
 
 </Project>

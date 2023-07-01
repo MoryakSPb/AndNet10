@@ -1,0 +1,14 @@
+﻿@page "/council"
+
+@if (DocIds is not null)
+{
+    <Virtualize Items="DocIds" OverscanCount="2">
+        <DecisionCard Id="context"/>
+    </Virtualize>
+}
+
+<LayoutSetter>
+    <Header></Header>
+    <Aside></Aside>
+    <Footer></Footer>
+</LayoutSetter>

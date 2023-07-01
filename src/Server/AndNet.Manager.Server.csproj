@@ -22,8 +22,6 @@
 		</PackageReference>
 		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.18.1" />
 		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="7.0.7" />
-		<PackageReference Include="OpenIddict" Version="4.4.0" />
-		<PackageReference Include="OpenIddict.AspNetCore" Version="4.4.0" />
 
 		<PackageReference Include="Quartz.AspNetCore" Version="3.6.2" />
 		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.7" />
@@ -36,9 +34,15 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Client\AndNet.Manager.Client.csproj" />
 		<ProjectReference Include="..\Database\AndNet.Manager.Database.csproj" />
+		<ProjectReference Include="..\DocumentExecutor\AndNet.Manager.DocumentExecutor.csproj" />
 		<ProjectReference Include="..\Integration\AndNet.Integration.Discord\AndNet.Integration.Discord.csproj" />
 		<ProjectReference Include="..\Integration\AndNet.Integration.Steam\AndNet.Integration.Steam.csproj" />
 		<ProjectReference Include="..\Shared\AndNet.Manager.Shared.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Jobs\Election\" />
+	  <Folder Include="Options\" />
 	</ItemGroup>
 
 

@@ -1,0 +1,12 @@
+set client_min_messages = WARNING;
+DROP TABLE IF EXISTS "AndNet".qrtz_fired_triggers;
+DROP TABLE IF EXISTS "AndNet".qrtz_paused_trigger_grps;
+DROP TABLE IF EXISTS "AndNet".qrtz_scheduler_state;
+DROP TABLE IF EXISTS "AndNet".qrtz_locks;
+DROP TABLE IF EXISTS "AndNet".qrtz_simprop_triggers;
+DROP TABLE IF EXISTS "AndNet".qrtz_simple_triggers;
+DROP TABLE IF EXISTS "AndNet".qrtz_cron_triggers;
+DROP TABLE IF EXISTS "AndNet".qrtz_blob_triggers;
+DROP TABLE IF EXISTS "AndNet".qrtz_triggers;
+DROP TABLE IF EXISTS "AndNet".qrtz_job_details;
+DROP TABLE IF EXISTS "AndNet".qrtz_calendars;

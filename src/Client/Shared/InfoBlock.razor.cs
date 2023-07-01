@@ -9,4 +9,7 @@ public partial class InfoBlock : ComponentBase
 
     [Parameter]
     public string Value { get; set; } = string.Empty;
+
+    [Parameter]
+    public string? Link { get; set; } = null;
 }

@@ -103,7 +103,7 @@ public static class ClanRules
         {
             ClanMemberRankEnum.Outcast => "Изганнник",
             ClanMemberRankEnum.Guest => "Гость",
-            ClanMemberRankEnum.Diplomat => "Дипломат",
+            ClanMemberRankEnum.Diplomat => "Рипломат",
             ClanMemberRankEnum.Ally => "Союзник",
             ClanMemberRankEnum.Candidate => "Кандидат",
             ClanMemberRankEnum.None => "",

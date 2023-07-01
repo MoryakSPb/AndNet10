@@ -6,6 +6,17 @@ namespace AndNet.Integration.Steam.Models;
 
 public readonly record struct PlayerActivityResultNode
 {
+    public enum PersonaState : byte
+    {
+        Offline,
+        Online,
+        Busy,
+        Away,
+        Snooze,
+        LookingToTrade,
+        LookingToPlay
+    }
+
     private const string _SPACE_ENGINEERS_APP_ID = "244850";
 
     [JsonPropertyName("steamid")]
@@ -17,6 +28,9 @@ public readonly record struct PlayerActivityResultNode
 
     [JsonPropertyName("realname")]
     public string? RealName { get; init; }
+
+    [JsonPropertyName("personastate")]
+    public PersonaState? State { get; init; }
 
     [JsonPropertyName("gameserverip")]
     [JsonConverter(typeof(IpEndPointConverter))]

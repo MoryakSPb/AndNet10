@@ -15,6 +15,7 @@ public record PlayerApplicationRequest
 
     [MaxLength(96, ErrorMessage = "Слишком длинное имя пользователя Discord")]
     [Required(ErrorMessage = "Необходимо указать имя пользователя Discord")]
+    [MinLength(1, ErrorMessage = "Необходимо указать имя пользователя Discord")]
     public string DiscordUsername { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Необходимо указать имя пользователя Discord")]
@@ -24,6 +25,7 @@ public record PlayerApplicationRequest
 
     [MaxLength(512)]
     [Required(ErrorMessage = "Необходимо указать ссылку на аккаунт Steam")]
+    [MinLength(1, ErrorMessage = "Необходимо указать ссылку на аккаунт Steam")]
     public string SteamLink { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Необходимо указать ссылку на аккаунт Steam")]
@@ -51,7 +53,7 @@ public record PlayerApplicationRequest
     [MaxLength(512, ErrorMessage = "Рекомендация должна быть не более 512 символов")]
     public string Recommendation { get; set; } = string.Empty;
 
-    [MaxLength(16384, ErrorMessage = "Доп. описание должно быть не более 16384 символов")]
+    [MaxLength(16384, ErrorMessage = "Роп. описание должно быть не более 16384 символов")]
     public string Description { get; set; } = string.Empty;
 
     [Required]

@@ -4,7 +4,7 @@ using AndNet.Manager.Shared.Enums;
 namespace AndNet.Manager.Shared.Models;
 
 public record Award(int Id, bool IsMarkedForDelete, uint Version, AwardType AwardType, DateTime IssueDate, int PlayerId,
-    int? IssuerId, string Description, int DecisionId);
+    int? IssuerId, string Description, int DecisionId, double CurrentScore);
 
 public record Expedition(int Id, bool IsMarkedForDelete, uint Version,
     DateTime StartDate, DateTime EndDate, ulong? DiscordRoleId, int CommanderId, bool IsActive,
@@ -19,7 +19,7 @@ public record PlayerContact
 [JsonDerivedType(typeof(FormerClanPlayer), (int)PlayerStatus.Former)]
 [JsonDerivedType(typeof(ClanPlayer), (int)PlayerStatus.Member)]
 public record Player(int Id, uint Version, PlayerStatus Status, string Nickname, string FullNickname,
-    string? RealName, ulong? DiscordId, ulong? SteamId, DateTime DetectionDate)
+    string? RealName, ulong? DiscordId, ulong? SteamId, DateTime DetectionDate, string? TimeZone)
 {
     public override string ToString()
     {
@@ -31,8 +31,9 @@ public record Player(int Id, uint Version, PlayerStatus Status, string Nickname,
 
 [JsonDerivedType(typeof(ExternalPlayer), (int)PlayerStatus.External)]
 public record ExternalPlayer(int Id, uint Version, PlayerStatus Status, string Nickname, string FullNickname,
-    string? RealName, ulong? DiscordId, ulong? SteamId, DateTime DetectionDate, PlayerRelationship Relationship) :
-    Player(Id, Version, Status, Nickname, FullNickname, RealName, DiscordId, SteamId, DetectionDate)
+    string? RealName, ulong? DiscordId, ulong? SteamId, DateTime DetectionDate, string? TimeZone,
+    PlayerRelationship Relationship) :
+    Player(Id, Version, Status, Nickname, FullNickname, RealName, DiscordId, SteamId, DetectionDate, TimeZone)
 {
     public override string ToString()
     {
@@ -42,9 +43,10 @@ public record ExternalPlayer(int Id, uint Version, PlayerStatus Status, string N
 
 [JsonDerivedType(typeof(FormerClanPlayer), (int)PlayerStatus.Former)]
 public record FormerClanPlayer(int Id, uint Version, PlayerStatus Status, string Nickname, string FullNickname,
-    string? RealName, ulong? DiscordId, ulong? SteamId, DateTime DetectionDate, PlayerRelationship Relationship,
+    string? RealName, ulong? DiscordId, ulong? SteamId, DateTime DetectionDate, string? TimeZone,
+    PlayerRelationship Relationship,
     DateTime JoinDate, DateTime LeaveDate, PlayerLeaveReason LeaveReason) : ExternalPlayer(Id,
-    Version, Status, Nickname, FullNickname, RealName, DiscordId, SteamId, DetectionDate, Relationship)
+    Version, Status, Nickname, FullNickname, RealName, DiscordId, SteamId, DetectionDate, TimeZone, Relationship)
 {
     public override string ToString()
     {
@@ -54,9 +56,10 @@ public record FormerClanPlayer(int Id, uint Version, PlayerStatus Status, string
 
 [JsonDerivedType(typeof(ClanPlayer), (int)PlayerStatus.Member)]
 public record ClanPlayer(int Id, uint Version, PlayerStatus Status, string Nickname, string FullNickname,
-    string? RealName, ulong? DiscordId, ulong? SteamId, DateTime DetectionDate, DateTime JoinDate, PlayerRank Rank,
+    string? RealName, ulong? DiscordId, ulong? SteamId, DateTime DetectionDate, string? TimeZone, DateTime JoinDate,
+    PlayerRank Rank,
     double Score, bool OnReserve) : Player(Id, Version, Status, Nickname, FullNickname, RealName, DiscordId,
-    SteamId, DetectionDate)
+    SteamId, DetectionDate.Date, TimeZone)
 {
     public override string ToString()
     {

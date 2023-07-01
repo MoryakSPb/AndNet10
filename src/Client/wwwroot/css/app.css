@@ -54,4 +54,4 @@
     text-align: center;
 }
 
-.loading-progress-text:after { content: var(--blazor-load-percentage-text, "Loading"); }
+.loading-progress-text:after { content: var(--blazor-load-percentage-text, "Загрузка"); }

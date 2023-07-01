@@ -1,10 +1,9 @@
 ﻿using AndNet.Manager.Database;
 using AndNet.Manager.Database.Models;
-using AndNet.Manager.Database.Models.Documentation;
-using AndNet.Manager.Database.Models.Documentation.Decisions.Player;
-using AndNet.Manager.Database.Models.Documentation.Decisions.Utility;
 using AndNet.Manager.Database.Models.Player;
+using AndNet.Manager.DocumentExecutor;
 using AndNet.Manager.Shared.Enums;
+using AndNet.Manager.Shared.Models.Documentation.Info.Decision.Player;
 using AndNet.Migrator.AndNet7.AndNet7;
 using AndNet.Migrator.AndNet7.AndNet7.Shared;
 using AndNet.Migrator.AndNet7.AndNet7.Shared.Enums;
@@ -18,11 +17,13 @@ public class Migrator : BackgroundService
 {
     private readonly ClanContext _clanContext;
     private readonly DatabaseContext _databaseContext;
+    private readonly DocumentService _documentService;
 
-    public Migrator(DatabaseContext databaseContext, ClanContext clanContext)
+    public Migrator(DatabaseContext databaseContext, ClanContext clanContext, DocumentService documentService)
     {
         _databaseContext = databaseContext;
         _clanContext = clanContext;
+        _documentService = documentService;
     }
 
 
@@ -83,26 +84,38 @@ public class Migrator : BackgroundService
 
             if (player is DbClanPlayer { Rank: PlayerRank.FirstAdvisor } clanPlayer) firstAdvisor = clanPlayer;
 
+            player.Awards ??= new List<DbAward>();
+            await _databaseContext.Players.AddAsync(player, stoppingToken).ConfigureAwait(false);
+            await _databaseContext.SaveChangesAsync(stoppingToken).ConfigureAwait(false);
             foreach (ClanAward award in clanContextMember.Awards)
             {
                 award.Date = award.Date;
-                EntityEntry<DbDocument> document = await _databaseContext.Documents.AddAsync(
-                    new DbDocumentDecisionCouncilPlayerAwardSheet
+                EntityEntry<DbDoc> document = await _databaseContext.Documents.AddAsync(
+                    new()
                     {
-                        AwardType = award.Type switch
+                        Info = new DecisionCouncilPlayerAwardSheet
                         {
-                            ClanAwardTypeEnum.None => AwardType.Copper,
-                            ClanAwardTypeEnum.Bronze => AwardType.Bronze,
-                            ClanAwardTypeEnum.Silver => AwardType.Silver,
-                            ClanAwardTypeEnum.Gold => AwardType.Gold,
-                            ClanAwardTypeEnum.Hero => AwardType.Hero,
-                            _ => throw new ArgumentOutOfRangeException()
+                            PlayerId = player.Id,
+                            Action = DecisionCouncilPlayer.PlayerAction.Generic,
+                            AwardType = award.Type switch
+                            {
+                                ClanAwardTypeEnum.None => AwardType.Copper,
+                                ClanAwardTypeEnum.Bronze => AwardType.Bronze,
+                                ClanAwardTypeEnum.Silver => AwardType.Silver,
+                                ClanAwardTypeEnum.Gold => AwardType.Gold,
+                                ClanAwardTypeEnum.Hero => AwardType.Hero,
+                                _ => throw new ArgumentOutOfRangeException()
+                            },
+                            Description = award.Description ?? string.Empty,
+                            PredeterminedIssueDate = award.Date < firstAdvisor.JoinDate ? new(2015, 1, 1) : award.Date,
+                            MinYesVotesPercent = 0d
                         },
                         CreationDate = DateTime.UtcNow,
-                        CreatorId = 1,
-                        Player = player,
-                        Creator = firstAdvisor,
-                        Body = @$"# Наградной лист
+                        AuthorId = 1,
+                        Author = firstAdvisor,
+                        Body = new()
+                        {
+                            Body = @$"# Наградной лист
 
 В процессе ввода в эксплуатацию системы управления привести награду, выданную или зарегистрированную в соответствии с более ранним уставом, к современному виду.
 Процесс перевода проводится автоматически, отдельное голосование по наградному листу не проводилось.
@@ -113,28 +126,21 @@ public class Migrator : BackgroundService
 - Тип: `{award.Type:D}`;
 - Дата выдачи: {award.Date.ToShortDateString()};
 - Описание: *{award.Description}*.
-",
-                        Description = award.Description ?? string.Empty
-                    }, stoppingToken);
-                DbDocumentDecisionCouncilPlayerAwardSheet awardSheet =
-                    (DbDocumentDecisionCouncilPlayerAwardSheet)document.Entity;
-                awardSheet.Votes ??= new List<DbVote>();
-                awardSheet.Votes.Add(new()
-                {
-                    Player = firstAdvisor,
-                    VoteType = VoteType.Yes,
-                    Date = DateTime.UtcNow,
-                    Decision = awardSheet
-                });
-                await awardSheet.AgreeExecuteAsync(firstAdvisor,
-                    _databaseContext);
-                awardSheet.Award!.IssueDate = award.Date < firstAdvisor.JoinDate ? new(2015, 1, 1) : award.Date;
+"
+                        }
+                    }, stoppingToken).ConfigureAwait(false);
+                document.Entity.GenerateTitleFromBody();
+                await _databaseContext.SaveChangesAsync(stoppingToken).ConfigureAwait(false);
+                await _documentService.AgreeExecuteAsync(document.Entity, firstAdvisor).ConfigureAwait(false);
+                document.State = EntityState.Modified;
             }
+
+            if (player is DbClanPlayer clan) clan.CalcPlayer();
+            await _databaseContext.SaveChangesAsync(stoppingToken).ConfigureAwait(false);
         }
 
-        await _databaseContext.SaveChangesAsync(stoppingToken);
-        foreach (DbClanPlayer clanPlayer in await _databaseContext.ClanPlayers.ToArrayAsync(stoppingToken))
-            clanPlayer.CalcPlayer(_databaseContext.Awards);
-        await _databaseContext.SaveChangesAsync(stoppingToken);
+        await _databaseContext.SaveChangesAsync(stoppingToken).ConfigureAwait(false);
+        Console.WriteLine("Migration done!");
+        Environment.Exit(0);
     }
 }

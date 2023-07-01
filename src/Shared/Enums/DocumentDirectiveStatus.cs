@@ -1,6 +1,6 @@
 ﻿namespace AndNet.Manager.Shared.Enums;
 
-public enum DocumentDirectiveStatus : short
+public enum DocumentDirectiveStatus : sbyte
 {
     Canceled = -1,
     Project = 0,

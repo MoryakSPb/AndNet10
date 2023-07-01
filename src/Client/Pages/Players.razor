@@ -6,7 +6,7 @@
     <button class="btn btn-secondary" @onclick="ClearSearch">
         <i class="bi bi-x"></i>
     </button>
-    <button class="btn btn-primary" @onclick="GetPlayers">
+    <button class="btn btn-primary" @onclick="async () => await GetPlayers(true)">
         <i class="bi bi-search"></i>
     </button>
 </div>
@@ -38,7 +38,7 @@
                 @if (player is ClanPlayer clanPlayer)
                 {
                     <td>
-                        <code>@clanPlayer.Score.ToString("000.000")</code>
+                        <code>@clanPlayer.Score.ToString("+000.000;-###.###;0000.000")</code>
                     </td>
                     <td>@RankRules.Names[clanPlayer.Rank]</td>
                 }

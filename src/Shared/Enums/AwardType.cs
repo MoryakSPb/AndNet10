@@ -1,6 +1,6 @@
 ﻿namespace AndNet.Manager.Shared.Enums;
 
-public enum AwardType
+public enum AwardType : sbyte
 {
     LargePenalty = -25,
     MediumPenalty = -10,

@@ -50,41 +50,40 @@
     </Header>
     <Aside>
         <div class="d-grid mb-3">
-            <a class="btn btn-primary btn-lg" href="/application">Вступить в клан</a>
+            <a class="btn btn-primary btn-lg @(IsApplicationDisabled ? "disabled" : "")" href="/application">Вступить в клан</a>
 
         </div>
+        @if (GlobalStats is not null)
+        {
+            <div class="d-flex flex-column mb-3">
+                <h5 class="mb-1">За последние 30 дней</h5>
+                <div class="d-flex flex-row justify-content-between">
+                    <h6>Максимальный онлайн</h6>
+                    <b>@GlobalStats.MaxOnline.ToString("D")</b>
+                </div>
+                <div class="d-flex flex-row justify-content-between">
+                    <h6>Одновременно в игре</h6>
+                    <b>@GlobalStats.MaxInGame.ToString("D")</b>
+                </div>
+                <div class="d-flex flex-row justify-content-between">
+                    <h6>Часов всеми сыграно</h6>
+                    <b>@GlobalStats.HoursPlayed.ToString("D")</b>
+                </div>
+                <div class="d-flex flex-row justify-content-between">
+                    <h6>Сражений</h6>
+                    <b>@GlobalStats.Battles.ToString("D")</b>
+                </div>
+                <div class="d-flex flex-row justify-content-between">
+                    <h6>Новых игроков</h6>
+                    <b>@GlobalStats.NewPlayers.ToString("D")</b>
+                </div>
+                <div class="d-flex flex-row justify-content-between">
+                    <h6>Наград заработано</h6>
+                    <b>@GlobalStats.AwardsIssued.ToString("D")</b>
+                </div>
+            </div>
+        }
 
-        <div class="d-flex flex-column mb-3">
-            <h5 class="mb-1">За последние 30 дней</h5>
-            <div class="d-flex flex-row justify-content-between">
-                <h6>Максимальный онлайн</h6>
-                <b>25</b>
-            </div>
-            <div class="d-flex flex-row justify-content-between">
-                <h6>Одновременно в игре</h6>
-                <b>25</b>
-            </div>
-            <div class="d-flex flex-row justify-content-between">
-                <h6>Одновременно на сервере</h6>
-                <b>13</b>
-            </div>
-            <div class="d-flex flex-row justify-content-between">
-                <h6>Часов всеми сыграно</h6>
-                <b>5403</b>
-            </div>
-            <div class="d-flex flex-row justify-content-between">
-                <h6>Сражений</h6>
-                <b>50</b>
-            </div>
-            <div class="d-flex flex-row justify-content-between">
-                <h6>Новых игроков</h6>
-                <b>3</b>
-            </div>
-            <div class="d-flex flex-row justify-content-between">
-                <h6>Наград заработано</h6>
-                <b>3</b>
-            </div>
-        </div>
     </Aside>
     <Footer>
 

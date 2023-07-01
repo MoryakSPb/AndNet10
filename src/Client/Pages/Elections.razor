@@ -1,0 +1,161 @@
+﻿@page "/elections"
+@using AndNet.Manager.Shared.Models.Election
+
+@if (Election is null)
+{
+    <h1>Загрузка…</h1>
+    <LayoutSetter>
+        <Header>
+        </Header>
+        <Aside>
+        </Aside>
+    </LayoutSetter>
+}
+else
+{
+    @switch (Election.Stage)
+    {
+        case ElectionStage.NotStarted:
+        {
+            <p class="lead">На данный момент выборы не проводятся, регистрация начнется <strong>@Election.ElectionEnd.AddDays(-30).ToShortDateString()</strong></p>
+        }
+            break;
+        case ElectionStage.Registration:
+        {
+            <p>Быть избранным в совет может участник клана, соответствующий следующим условиям:</p>
+            <ul>
+                <li>Ранг выше или равен «Специалист», ниже «Первый советник»;</li>
+                <li>Не состоит в резерве.</li>
+            </ul>
+            <div class="d-grid gap-2">
+                <button class="btn @(Election.Candidates.Any(x => x.PlayerId == Me.Id) ? "btn-danger" : "btn-primary")"
+                        disabled="@(Me is not ClanPlayer {OnReserve: false, Rank: >= PlayerRank.MiddleSpecialist and < PlayerRank.FirstAdvisor })"
+                        @onclick="async () => await Reg()">
+                    @(Election.Candidates.Any(x => x.PlayerId == Me.Id) ? "Отозвать регистрацию" : "Зарегистрироваться")
+                </button>
+            </div>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">Зарегистрированные</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (ElectionCandidate candidate in Election.Candidates)
+                {
+                    <tr>
+                        <td>
+                            <a href="player/@candidate.PlayerId">@_nicknames[candidate.PlayerId]</a>
+                        </td>
+
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+            break;
+        case ElectionStage.Voting:
+        {
+            @if (IsVoted || Bulletin is null)
+            {
+                <p class="lead">Вы отправили свой голос! Результаты выборов будут объявлены <strong>@Election.ElectionEnd.AddDays(-4).ToString("g")</strong></p>
+                @foreach (ElectionCandidate candidate in Election.Candidates)
+                {
+                    <div class="alert alert-primary mb-2 d-flex flex-row justify-content-center align-items-center">
+                        <a class="alert-link fs-5" href="player/@candidate.PlayerId" target="_blank">@_nicknames[candidate.PlayerId]</a>
+                    </div>
+                }
+            }
+            else
+            {
+                <p>
+                    Вам необходимо оценить каждого из кандидатов в совет положительно или отрицательно.
+                    <br/>
+                    Для этого используйте кнопки «+» и «-» в блоке с никнеймом кандидата.
+                </p>
+                @foreach (ElectionCandidate candidate in Election.Candidates)
+                {
+                    <div class="alert @(Bulletin[candidate.PlayerId].HasValue ? Bulletin[candidate.PlayerId]!.Value ? "alert-success" : "alert-danger" : "alert-warning") mb-2 d-flex flex-row justify-content-between align-items-center">
+                        <button class="btn btn-danger" @onclick="() => Bulletin![candidate.PlayerId] = false" disabled="@(Bulletin![candidate.PlayerId] == false)">
+                            <i class="bi bi-dash-lg"></i>
+                        </button>
+                        <a class="alert-link fs-5" href="player/@candidate.PlayerId" target="_blank">@_nicknames[candidate.PlayerId]</a>
+                        <button class="btn btn-success" @onclick="() => Bulletin![candidate.PlayerId] = true" disabled="@(Bulletin![candidate.PlayerId] == true)">
+                            <i class="bi bi-plus-lg"></i>
+                        </button>
+                    </div>
+                }
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary btn-lg" disabled="@(Bulletin.Any(x => !x.Value.HasValue))" @onclick="async () => await Vote()">Отправить голос</button>
+                </div>
+            }
+        }
+            break;
+        case ElectionStage.ResultsAnnounce:
+        {
+            <p class="lead">
+                Голосование закончено. Избранные советники вступят в свои полномочия <strong>@Election.ElectionEnd.ToString("g")</strong>
+            </p>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">Участник</th>
+                    <th scope="col">
+                        <i class="bi bi-trophy-fill" title="Победитель"></i>
+                    </th>
+                    <th scope="col">
+                        <i class="bi bi-123" title="Рейтинг"></i>
+                    </th>
+                    <th scope="col">Дата регистрации</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (ElectionCandidate candidate in Election.Candidates)
+                {
+                    <tr>
+                        <th scope="row">
+                            <a href="player/@candidate.PlayerId">@_nicknames[candidate.PlayerId]</a>
+                        </th>
+                        <td>
+                            @if (candidate.IsWinner)
+                            {
+                                <i class="bi bi-check-lg"></i>
+                            }
+                        </td>
+                        <td>
+                            <code>
+                                @candidate.Rating.ToString("+00;-00")
+                            </code>
+                        </td>
+                        <th scope="col">@candidate.RegistrationDate.ToString("g")</th>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+            break;
+        default:
+            throw new ArgumentOutOfRangeException();
+    }
+    <LayoutSetter>
+        <Header>
+
+        </Header>
+        <Aside>
+            <InfoBlock Key="Текущая стадия" Value="@ElectionRules.StageNames[Election.Stage]"/>
+
+            <InfoBlock Key="Дата начала регистрации" Value="@Election.ElectionEnd.AddDays(-30).ToString("g")"/>
+            <InfoBlock Key="Дата начала голосования" Value="@Election.ElectionEnd.AddDays(-15).ToString("g")"/>
+            <InfoBlock Key="Дата объявления итогов" Value="@Election.ElectionEnd.AddDays(-4).ToString("g")"/>
+            <InfoBlock Key="Дата начала полномочий избранных" Value="@Election.ElectionEnd.ToString("g")"/>
+
+            @if (Election.Stage >= ElectionStage.Voting)
+            {
+                <InfoBlock Key="Вакантных мест в совете" Value="@(Election.CouncilCapacity.ToString("D"))"/>
+                <InfoBlock Key="Избирателей всего" Value="@(Election.AllVotersCount.ToString("D"))"/>
+                <InfoBlock Key="Избирателей проголосовало" Value="@(Election.VotedVotersCount.ToString("D"))"/>
+                <InfoBlock Key="Явка" Value="@((Election.VotedVotersCount / (double)Election.AllVotersCount).ToString("P0"))"/>
+            }
+        </Aside>
+    </LayoutSetter>
+}

@@ -1,6 +1,4 @@
 ﻿using System.Text.Json.Serialization;
-using AndNet.Manager.Database.Models.Documentation.Decisions.Expedition;
-using AndNet.Manager.Database.Models.Documentation.Report;
 using AndNet.Manager.Database.Models.Player;
 using AndNet.Manager.Shared.Models;
 using NpgsqlTypes;
@@ -14,12 +12,6 @@ public record DbExpedition
 
     [JsonIgnore]
     public IList<DbPlayer> Members { get; set; } = null!;
-
-    [JsonIgnore]
-    public IList<DbDocumentReportExpedition> Reports { get; set; } = null!;
-
-    [JsonIgnore]
-    public IList<DbDocumentDecisionCouncilExpedition> CouncilPlayerDirectives { get; set; } = null!;
 
     public DateTime StartDate
     {

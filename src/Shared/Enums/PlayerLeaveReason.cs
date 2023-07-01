@@ -1,6 +1,6 @@
 ﻿namespace AndNet.Manager.Shared.Enums;
 
-public enum PlayerLeaveReason
+public enum PlayerLeaveReason : byte
 {
     Unknown,
     AtWill,

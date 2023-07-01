@@ -1,0 +1,139 @@
+﻿@page "/documents"
+@using AndNet.Manager.Shared.Models.Documentation
+@using AndNet.Manager.Client.Shared.Documents
+@layout MainLayout
+
+@if (Docs is not null)
+{
+    @foreach (Doc doc in Docs)
+    {
+        <DocumentCard Document="doc"/>
+    }
+    <nav class="d-flex flex-row justify-content-center">
+        <ul class="pagination">
+            <li class="page-item">
+                <button class="page-link  @(DocsPreviousPageAvailable ? "" : "disabled")" @onclick="async () => await SetDocPage(1)">
+                    <i class="bi bi-chevron-double-left"></i>
+                </button>
+            </li>
+            <li class="page-item">
+                <button class="page-link @(DocsPreviousPageAvailable ? "" : "disabled")" @onclick="async () => await SetDocPage(DocsPage - 1)">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+            </li>
+            @foreach (int i in Enumerable.Range(Math.Max(1, DocsPage - 5), Math.Min(DocsPagesCount, Math.Min(11, DocsPagesCount - DocsPage + 6))))
+            {
+                <li class="page-item @(DocsPage == i ? "disabled active" : "")">
+                    <button class="page-link" @onclick="async () => await SetDocPage(i)">@i</button>
+                </li>
+            }
+            <li class="page-item">
+                <button class="page-link @(DocsNextPageAvailable ? "" : "disabled")" @onclick="async () => await SetDocPage(DocsPage + 1)">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </li>
+            <li class="page-item">
+                <button class="page-link @(DocsNextPageAvailable ? "" : "disabled")" @onclick="async () => await SetDocPage(DocsPagesCount)">
+                    <i class="bi bi-chevron-double-right"></i>
+                </button>
+            </li>
+        </ul>
+    </nav>
+}
+else
+{
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+}
+
+<LayoutSetter>
+    <Header>
+        <div class="btn-toolbar mt-1 px-3 d-flex flex-row" role="toolbar">
+            <div class="btn-group me-2" role="group">
+                <button type="button" class="btn btn-success" disabled title="Создать новый документ…">
+                    <i class="bi bi-file-plus"></i>
+                </button>
+            </div>
+            <div class="input-group d-flex flex-row flex-grow-1">
+                <input type="search" class="form-control flex-fill" placeholder="Поиск по содержимому…" @bind="@SearchString" @onkeydown="OnKeyDownSearch">
+                <button class="btn btn-secondary" @onclick="ClearSearch">
+                    <i class="bi bi-x"></i>
+                </button>
+                <button class="btn btn-primary" @onclick="async () => await LoadDocs(true)">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </div>
+    </Header>
+    <Footer></Footer>
+    <Aside>
+        <div class="d-flex flex-column justify-content-between mb-3">
+            <label class="form-label">Быстрый фильтр</label>
+            <div class="btn-group" role="group">
+
+                <button type="button" class="btn btn-primary" title="Действующие директивы">
+                    <i class="bi bi-file-earmark-font"></i>
+                </button>
+                <button type="button" class="btn btn-primary" title="Решения на рассмотрении">
+                    <i class="bi bi-diamond-half"></i>
+                </button>
+                <button type="button" class="btn btn-secondary" title="Сброс">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+        </div>
+        <div class="d-flex flex-column justify-content-between mb-3">
+            <label class="form-label">Сортировка</label>
+            <InputSelect class="form-select" @bind-Value="SortType">
+                <option value="@DocumentSortType.Views">Просмотры</option>
+                <option value="@DocumentSortType.CreationDate">Дата создания</option>
+            </InputSelect>
+        </div>
+        <div class="d-flex flex-column justify-content-between mb-3">
+            <label class="form-label">Категория</label>
+            <InputSelect class="form-select" @bind-Value="Category">
+                <option value="@DocumentCategory.All">Все</option>
+                <option value="@DocumentCategory.Decision">Решение</option>
+                <option value="@DocumentCategory.Directive">Директива</option>
+                <option value="@DocumentCategory.Protocol">Протокол</option>
+                <option value="@DocumentCategory.Report">Отчет</option>
+            </InputSelect>
+        </div>
+        @if (Category == DocumentCategory.Directive)
+        {
+            <div class="d-flex flex-column justify-content-between mb-3">
+                <label class="form-label">Статус директивы</label>
+                <select class="form-select">
+                    <option>Все</option>
+                    <option value="1">Действует</option>
+                    <option value="-1">Отменена</option>
+                    <option value="-2">Не принята</option>
+                </select>
+            </div>
+        }
+        @if (Category == DocumentCategory.Decision)
+        {
+            <div class="d-flex flex-column justify-content-between mb-3">
+                <label class="form-label">Статус решения</label>
+                <select class="form-select">
+                    <option>Все</option>
+                    <option value="0">Не рассмотрении</option>
+                    <option value="-1">Отклонено</option>
+                    <option value="1">Исполнено</option>
+                </select>
+            </div>
+        }
+        <div class="d-flex flex-column justify-content-between mb-3">
+            <label class="form-label">Мин. дата</label>
+            <InputDate class="form-control" @bind-Value="StartDate"/>
+        </div>
+        <div class="d-flex flex-column justify-content-between mb-3">
+            <label class="form-label">Макс. дата</label>
+            <InputDate class="form-control" @bind-Value="EndDate"/>
+        </div>
+        <div class="d-grid gap-2 mb-3">
+            <button class="btn btn-primary" @onclick="async () => {SearchString = string.Empty; await LoadDocs(true);}">Применить фильтр</button>
+        </div>
+    </Aside>
+</LayoutSetter>

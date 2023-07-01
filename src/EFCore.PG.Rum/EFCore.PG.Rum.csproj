@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+
+	  <AssemblyName>Npgsql.EntityFrameworkCore.PostgreSQL.Rum</AssemblyName>
+    <RootNamespace>Npgsql.EntityFrameworkCore.PostgreSQL.Rum</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4" />
+  </ItemGroup>
+
+</Project>

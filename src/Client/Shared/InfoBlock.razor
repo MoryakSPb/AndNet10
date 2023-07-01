@@ -1,4 +1,11 @@
 ﻿<div class="d-flex flex-column justify-content-between mb-2">
-    <b>@Key</b>
-    <span>@Value</span>
+    <label>@Key</label>
+    @if (Link is null)
+    {
+        <span>@Value</span>
+    }
+    else
+    {
+        <a href="@Link">@Value</a>
+    }
 </div>

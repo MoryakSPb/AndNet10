@@ -1,4 +1,5 @@
-﻿using AndNet.Integration.Steam;
+﻿using System.Security.Claims;
+using AndNet.Integration.Steam;
 using AndNet.Manager.Database;
 using AndNet.Manager.Database.Models.Auth;
 using AndNet.Manager.Database.Models.Player;
@@ -40,10 +41,16 @@ public class LoginController : ControllerBase
         string? actionName = provider switch
         {
             "Steam" => nameof(CallbackSteam),
+            "Discord" => nameof(CallbackDiscord),
             _ => null
         };
         if (actionName is null) return BadRequest();
-        string? redirectUrl = Url.Action(actionName, new { returnUrl });
+        string? redirectUrl = Url.Action(actionName, new
+        {
+            returnUrl = actionName == nameof(CallbackDiscord)
+                ? "https://andnet.eclipse-interactive.xyz/api/auth/login-callback/discord"
+                : returnUrl
+        });
         AuthenticationProperties properties =
             _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
         return new ChallengeResult(provider, properties);
@@ -53,12 +60,23 @@ public class LoginController : ControllerBase
     [AllowAnonymous]
     [ProducesResponseType(typeof(ClaimRecord[]), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
-    public ActionResult<IAsyncEnumerable<ClaimRecord>> Name()
+    [ResponseCache(Duration = 588, Location = ResponseCacheLocation.Client)]
+    public async Task<ActionResult<IAsyncEnumerable<ClaimRecord>>> Name()
     {
         if (!User.Identity?.IsAuthenticated ?? true) return Unauthorized();
+        DbUser? user = await _userManager.GetUserAsync(HttpContext.User).ConfigureAwait(false);
+        if (user is null) return NotFound();
+        int? playerId = (await _databaseContext.ClanPlayers.Select(x => new { x.Id, x.IdentityId })
+            .FirstOrDefaultAsync(x => x.IdentityId == user.Id)
+            .ConfigureAwait(false))?.Id;
+        if (playerId is null) return NotFound();
         return Ok(User.Claims
             .Where(x => x.Type != "AspNet.Identity.SecurityStamp")
-            .Select(x => new ClaimRecord(x.Type, x.Value, x.Issuer, x.OriginalIssuer, x.ValueType))
+            .Select(x =>
+            {
+                string value = (x.Type == ClaimTypes.NameIdentifier ? playerId.ToString() : x.Value)!;
+                return new ClaimRecord(x.Type, value, x.Issuer, x.OriginalIssuer, x.ValueType);
+            })
             .ToAsyncEnumerable());
     }
 
@@ -68,6 +86,60 @@ public class LoginController : ControllerBase
     {
         await HttpContext.SignOutAsync(User.Identity?.AuthenticationType).ConfigureAwait(false);
         return LocalRedirect("/");
+    }
+
+    [HttpGet("login-callback/discord")]
+    [AllowAnonymous]
+    public async Task<IActionResult> CallbackDiscord([FromQuery] string? returnUrl = null,
+        [FromQuery] string? code = null)
+    {
+        returnUrl ??= Url.Content("~/");
+        if (!Url.IsLocalUrl(returnUrl)) returnUrl = Url.Content("~/");
+        ExternalLoginInfo? info = await _signInManager.GetExternalLoginInfoAsync().ConfigureAwait(false);
+        if (info == null) return BadRequest();
+
+        SignInResult result = await _signInManager
+            .ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, false, false).ConfigureAwait(false);
+
+        if (result.IsLockedOut || result.IsNotAllowed)
+            return Forbid();
+        if (result.RequiresTwoFactor) return RedirectToPage("./LoginWith2fa", new { ReturnUrl = returnUrl });
+        if (result.Succeeded)
+        {
+            await HttpContext.SignInAsync(info.Principal)
+                .ConfigureAwait(false);
+            return LocalRedirect(returnUrl);
+        }
+
+        if (!ulong.TryParse(info.ProviderKey, out ulong discordId)) return BadRequest();
+        DbClanPlayer? player = await _databaseContext.ClanPlayers.Include(x => x.Identity)
+            .FirstOrDefaultAsync(x => x.DiscordId == discordId).ConfigureAwait(false);
+
+        if (player is null) return NotFound();
+        if (player.Identity is null)
+        {
+            DbUser newUser = new()
+            {
+                Player = player,
+                UserName = player.Nickname,
+                ConcurrencyStamp = Guid.NewGuid().ToString("n"),
+                SecurityStamp = Guid.NewGuid().ToString("n")
+            };
+            await _userManager.CreateAsync(newUser).ConfigureAwait(false);
+            //player.IdentityId = newUser.Id;
+            player.Identity = newUser;
+        }
+
+        await _userManager.AddLoginAsync(player.Identity,
+            new ExternalLoginInfo(info.Principal, info.LoginProvider, info.ProviderKey,
+                info.ProviderDisplayName ?? string.Empty)).ConfigureAwait(false);
+        await _userManager.SetLockoutEnabledAsync(player.Identity, false).ConfigureAwait(false);
+        List<string> roles = new() { "member" };
+        if (player.Rank >= PlayerRank.Advisor) roles.Add("advisor");
+        if (player.Rank == PlayerRank.FirstAdvisor) roles.Add("first_advisor");
+        await _userManager.AddToRolesAsync(player.Identity, roles).ConfigureAwait(false);
+        await _userManager.UpdateAsync(player.Identity).ConfigureAwait(false);
+        return await CallbackDiscord(returnUrl, code).ConfigureAwait(false);
     }
 
     [HttpGet("login-callback/steam")]
@@ -85,6 +157,8 @@ public class LoginController : ControllerBase
         SignInResult result = await _signInManager
             .ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, false, false).ConfigureAwait(false);
 
+        if (result.IsLockedOut || result.IsNotAllowed)
+            return Forbid();
         if (result.RequiresTwoFactor) return RedirectToPage("./LoginWith2fa", new { ReturnUrl = returnUrl });
         if (result.Succeeded)
         {
@@ -93,8 +167,7 @@ public class LoginController : ControllerBase
             return LocalRedirect(returnUrl);
         }
 
-        if (result.IsLockedOut || result.IsNotAllowed)
-            return Forbid();
+
         ulong? steamId = await _steamClient.ResolveSteamUrlAsync(info.ProviderKey).ConfigureAwait(false);
         DbClanPlayer? player = await _databaseContext.ClanPlayers.Include(x => x.Identity)
             .FirstOrDefaultAsync(x => x.SteamId == steamId).ConfigureAwait(false);

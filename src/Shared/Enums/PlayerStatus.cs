@@ -1,6 +1,6 @@
 ﻿namespace AndNet.Manager.Shared.Enums;
 
-public enum PlayerStatus
+public enum PlayerStatus : sbyte
 {
     Former = -1,
     External = 0,

@@ -14,9 +14,7 @@ public partial class NavMenu
 
     protected override async Task OnInitializedAsync()
     {
-        Console.WriteLine(AuthenticationStateProvider.ToString() ?? "null");
         AuthenticationState authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        Console.WriteLine(authState.User.Identity?.AuthenticationType);
         if (authState.User.Identity?.IsAuthenticated ?? false)
         {
             UserName = authState.User.Identity?.Name;

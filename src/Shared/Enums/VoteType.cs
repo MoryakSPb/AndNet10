@@ -1,6 +1,6 @@
 ﻿namespace AndNet.Manager.Shared.Enums;
 
-public enum VoteType
+public enum VoteType : byte
 {
     None,
     No,

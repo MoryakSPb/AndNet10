@@ -1,10 +1,5 @@
 ﻿using System.Text.Json.Serialization;
 using AndNet.Manager.Database.Models.Auth;
-using AndNet.Manager.Database.Models.Documentation;
-using AndNet.Manager.Database.Models.Documentation.Decisions;
-using AndNet.Manager.Database.Models.Documentation.Decisions.Player;
-using AndNet.Manager.Database.Models.Documentation.Decisions.Utility;
-using AndNet.Manager.Database.Models.Documentation.Report.Utility;
 using AndNet.Manager.Shared.Enums;
 
 namespace AndNet.Manager.Database.Models.Player;
@@ -27,25 +22,7 @@ public abstract record DbPlayer
     public IList<DbExpedition> AccountableExpeditions { get; set; } = null!;
 
     [JsonIgnore]
-    public IList<DbDocument> CreatedDocuments { get; set; } = null!;
-
-    [JsonIgnore]
-    public IList<DbDocumentProtocol> RelatedProtocols { get; set; } = null!;
-
-    [JsonIgnore]
-    public IList<DbBattleCombatant> BattleCombatantsCommander { get; set; } = null!;
-
-    [JsonIgnore]
-    public IList<DbBattleCombatant> BattleCombatantsMember { get; set; } = null!;
-
-    [JsonIgnore]
-    public IList<DbDocumentDecision> ExecutedDecisions { get; set; } = null!;
-
-    [JsonIgnore]
-    public IList<DbDocumentDecisionCouncilPlayer> CouncilPlayerDirectives { get; set; } = null!;
-
-    [JsonIgnore]
-    public IList<DbVote> Votes { get; set; } = null!;
+    public IList<DbDoc> CreatedDocuments { get; set; } = null!;
 
     [JsonIgnore]
     public int? IdentityId { get; set; }
@@ -84,6 +61,6 @@ public abstract record DbPlayer
     {
         return new(player.Id, player.Version,
             player.Status, player.Nickname, player.ToString(), player.RealName, player.DiscordId, player.SteamId,
-            player.DetectionDate);
+            player.DetectionDate, player.TimeZone?.Id);
     }
 }

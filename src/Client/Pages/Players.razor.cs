@@ -64,8 +64,9 @@ public partial class Players : ComponentBase
         StateHasChanged();
     }
 
-    public async Task GetPlayers()
+    public async Task GetPlayers(bool forceOnFirstPage = false)
     {
+        if (forceOnFirstPage) Page = 1;
         HttpResponseMessage response = await HttpClient.GetAsync(
             $"api/Player?skip={ITEMS_ON_PAGE * (Page - 1)}&take={ITEMS_ON_PAGE}&onlyClanMembers=true&search={UrlEncoder.Default.Encode(SearchString)}",
             HttpCompletionOption.ResponseHeadersRead);
