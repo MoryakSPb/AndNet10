@@ -30,7 +30,6 @@ public class ApplicationController : ControllerBase
 
     [HttpGet("steam")]
     [AllowAnonymous]
-    [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any, NoStore = false)]
     public async Task<ActionResult<ulong>> GetSteamId([FromQuery] string url)
     {
         if (string.IsNullOrWhiteSpace(url)) return NotFound();
@@ -40,7 +39,6 @@ public class ApplicationController : ControllerBase
 
     [HttpGet("discord")]
     [AllowAnonymous]
-    [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any, NoStore = false)]
     public async Task<ActionResult<ulong>> GetDiscordId([FromQuery] string username)
     {
         if (string.IsNullOrWhiteSpace(username)) return NotFound();

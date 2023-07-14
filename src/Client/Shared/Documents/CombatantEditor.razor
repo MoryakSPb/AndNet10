@@ -1,0 +1,35 @@
+﻿@using AndNet.Manager.Shared.Models.Documentation.Info.Report
+<div class="d-flex flex-column">
+    <div class="mb-3">
+        <label class="form-label">Тэг</label>
+        <input type="text" class="form-control" @bind="BattleCombatant.Tag">
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Название</label>
+        <input type="text" class="form-control" @bind="BattleCombatant.Name">
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Участники</label>
+        <StringListEditor AddItem="x => BattleCombatant.UnknownPlayers = BattleCombatant.UnknownPlayers.Add(x)"
+                          RemoveItem="x => BattleCombatant.UnknownPlayers = BattleCombatant.UnknownPlayers.Remove(x)"
+                          GetItems="() => BattleCombatant.UnknownPlayers"/>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Техника</label>
+        <StringListEditor AddItem="x => BattleCombatant.Units = BattleCombatant.Units.Add(x)"
+                          RemoveItem="x => BattleCombatant.Units = BattleCombatant.Units.Remove(x)"
+                          GetItems="() => BattleCombatant.Units"/>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Потери</label>
+        <StringListEditor AddItem="x => BattleCombatant.Casualties = BattleCombatant.Casualties.Add(x)"
+                          RemoveItem="x => BattleCombatant.Casualties = BattleCombatant.Casualties.Remove(x)"
+                          GetItems="() => BattleCombatant.Casualties"/>
+    </div>
+</div>
+
+@code
+{
+    [Parameter]
+    public ReportInfoBattle.BattleCombatant BattleCombatant { get; set; } = new();
+}

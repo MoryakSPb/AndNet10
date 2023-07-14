@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Database\AndNet.Manager.Database.csproj" />
+    <ProjectReference Include="..\Integration\AndNet.Integration.Discord\AndNet.Integration.Discord.csproj" />
   </ItemGroup>
 
 </Project>

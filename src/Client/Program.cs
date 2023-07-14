@@ -1,3 +1,4 @@
+using AndNet.Manager.Client.Shared;
 using BlazorBootstrap;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
@@ -24,6 +25,7 @@ public class Program
             sp.GetRequiredService<IHttpClientFactory>().CreateClient("AndNet.Manager.Server"));
 
         builder.Services.AddScoped<AuthenticationStateProvider, AndNetAuthenticationStateProvider>();
+        builder.Services.AddScoped<PlayerNicknamesService>();
 
         await builder.Build().RunAsync();
     }

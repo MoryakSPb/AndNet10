@@ -16,6 +16,10 @@ using Quartz;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
+#if DEBUG
+DiscordService.SilentMode = true;
+#endif
+
 builder.Services.Configure<SteamOptions>(builder.Configuration.GetRequiredSection("Steam"));
 builder.Services.Configure<DiscordOptions>(builder.Configuration.GetRequiredSection("Discord"));
 builder.Services.Configure<AwardOptions>(builder.Configuration.GetRequiredSection("Award"));

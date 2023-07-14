@@ -1,0 +1,102 @@
+﻿@page "/document/new"
+@using AndNet.Manager.Shared.Models.Documentation.Info
+@using AndNet.Manager.Shared.Models.Documentation.Info.Report
+@layout MainLayoutWithoutAside
+
+<div class="mb-3">
+    <label class="form-label">Заголовок</label>
+    <input type="text" class="form-control" @bind="Title">
+</div>
+<div class="mb-3">
+    <label class="form-label">Тип</label>
+    <select class="form-select" @bind="SelectedType">
+        @foreach (KeyValuePair<int, Type> type in AvailableDocTypes)
+        {
+            <option value="@type.Key">@DocRules.DocNames[type.Value]</option>
+        }
+    </select>
+</div>
+@if (AvailableDocTypes[SelectedType] == typeof(ProtocolInfo))
+{
+    <div class="mb-3">
+        <label class="form-label">Тип протокола</label>
+        <select class="form-select" @bind="ProtocolType">
+            @foreach (ProtocolType type in Enum.GetValues<ProtocolType>())
+            {
+                <option value="@type">@DocRules.ProtocolTypeNames[type]</option>
+            }
+        </select>
+    </div>
+}
+
+@if (AvailableDocTypes[SelectedType] == typeof(ReportInfoExpedition))
+{
+    <div class="mb-3">
+        <label class="form-label">№ экспедиции</label>
+        <input type="number" class="form-control" @bind="ExpeditionId">
+    </div>
+}
+
+@if (AvailableDocTypes[SelectedType] == typeof(ReportInfo) || AvailableDocTypes[SelectedType].BaseType == typeof(ReportInfo))
+{
+    <div class="mb-3">
+        <label class="form-label">Дата начала</label>
+        <input type="datetime" class="form-control" @bind="StartDate">
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Дата конца</label>
+        <input type="datetime" class="form-control" @bind="EndDate">
+    </div>
+}
+
+@if (AvailableDocTypes[SelectedType] == typeof(ReportInfoBattle))
+{
+    <div class="mb-3">
+        <label class="form-label">IP сервера</label>
+        <input type="text" class="form-control" @bind="EndPointRaw">
+    </div>
+    <div class="mb-3">
+        <div class="d-flex flex-row">
+            <label class="form-label me-2">Стороны</label>
+            <button class="btn btn-sm btn-success me-1"
+                    @onclick="() => BattleCombatants = BattleCombatants.Add(new())"
+                    disabled="@(BattleCombatants.Count >= 4)">
+                <i class="bi bi-plus-lg"></i>
+            </button>
+            <button class="btn btn-sm btn-danger"
+                    @onclick="() => BattleCombatants = BattleCombatants.RemoveAt(BattleCombatants.Count - 1)"
+                    disabled="@(BattleCombatants.Count <= 2)">
+                <i class="bi bi-dash-lg"></i>
+            </button>
+        </div>
+
+        <div class="d-flex flex-row justify-content-around">
+            @foreach (ReportInfoBattle.BattleCombatant battleCombatant in BattleCombatants)
+            {
+                <CombatantEditor BattleCombatant="battleCombatant"/>
+            }
+        </div>
+    </div>
+}
+
+<div class="mb-3">
+    <label class="form-label">Текст</label>
+    <textarea class="form-control" rows="12" @bind="Body">
+
+    </textarea>
+</div>
+<div class="d-grid gap-2 mb-3">
+    <button class="btn btn-primary" type="button" disabled="@(!CreateEnabled())" @onclick="async () => await Create()">Создать</button>
+</div>
+
+<LayoutSetter>
+    <Header>
+
+    </Header>
+    <Aside>
+
+    </Aside>
+    <Footer>
+
+    </Footer>
+</LayoutSetter>

@@ -36,7 +36,7 @@ public record DocInfo
     [JsonPropertyOrder(0)]
     [JsonPropertyName("$type")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string Type
+    public string? Type
     {
         get;
         [Obsolete("Значение устанавливает JsonSerializer")]

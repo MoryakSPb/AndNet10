@@ -1,4 +1,5 @@
-﻿@page "/elections"
+﻿@attribute [Authorize(Roles = "member")]
+@page "/elections"
 @using AndNet.Manager.Shared.Models.Election
 
 @if (Election is null)
@@ -24,12 +25,12 @@ else
         {
             <p>Быть избранным в совет может участник клана, соответствующий следующим условиям:</p>
             <ul>
-                <li>Ранг выше или равен «Специалист», ниже «Первый советник»;</li>
+                <li>Ранг выше или равен «Специалист 2-ой статьи», ниже «Первый советник»;</li>
                 <li>Не состоит в резерве.</li>
             </ul>
             <div class="d-grid gap-2">
                 <button class="btn @(Election.Candidates.Any(x => x.PlayerId == Me.Id) ? "btn-danger" : "btn-primary")"
-                        disabled="@(Me is not ClanPlayer {OnReserve: false, Rank: >= PlayerRank.MiddleSpecialist and < PlayerRank.FirstAdvisor })"
+                        disabled="@(Me is not ClanPlayer {OnReserve: false, Rank: >= PlayerRank.Specialist2nd and < PlayerRank.FirstAdvisor })"
                         @onclick="async () => await Reg()">
                     @(Election.Candidates.Any(x => x.PlayerId == Me.Id) ? "Отозвать регистрацию" : "Зарегистрироваться")
                 </button>
@@ -45,7 +46,7 @@ else
                 {
                     <tr>
                         <td>
-                            <a href="player/@candidate.PlayerId">@_nicknames[candidate.PlayerId]</a>
+                            <a href="player/@candidate.PlayerId">@PlayerNicknamesService.GetFullNicknameFromCache(candidate.PlayerId)</a>
                         </td>
 
                     </tr>
@@ -62,7 +63,7 @@ else
                 @foreach (ElectionCandidate candidate in Election.Candidates)
                 {
                     <div class="alert alert-primary mb-2 d-flex flex-row justify-content-center align-items-center">
-                        <a class="alert-link fs-5" href="player/@candidate.PlayerId" target="_blank">@_nicknames[candidate.PlayerId]</a>
+                        <a class="alert-link fs-5" href="player/@candidate.PlayerId" target="_blank">@PlayerNicknamesService.GetFullNicknameFromCache(candidate.PlayerId)</a>
                     </div>
                 }
             }
@@ -79,7 +80,7 @@ else
                         <button class="btn btn-danger" @onclick="() => Bulletin![candidate.PlayerId] = false" disabled="@(Bulletin![candidate.PlayerId] == false)">
                             <i class="bi bi-dash-lg"></i>
                         </button>
-                        <a class="alert-link fs-5" href="player/@candidate.PlayerId" target="_blank">@_nicknames[candidate.PlayerId]</a>
+                        <a class="alert-link fs-5" href="player/@candidate.PlayerId" target="_blank">@PlayerNicknamesService.GetFullNicknameFromCache(candidate.PlayerId)</a>
                         <button class="btn btn-success" @onclick="() => Bulletin![candidate.PlayerId] = true" disabled="@(Bulletin![candidate.PlayerId] == true)">
                             <i class="bi bi-plus-lg"></i>
                         </button>
@@ -114,7 +115,7 @@ else
                 {
                     <tr>
                         <th scope="row">
-                            <a href="player/@candidate.PlayerId">@_nicknames[candidate.PlayerId]</a>
+                            <a href="player/@candidate.PlayerId">@PlayerNicknamesService.GetFullNicknameFromCache(candidate.PlayerId)</a>
                         </th>
                         <td>
                             @if (candidate.IsWinner)
@@ -137,6 +138,7 @@ else
         default:
             throw new ArgumentOutOfRangeException();
     }
+
     <LayoutSetter>
         <Header>
 

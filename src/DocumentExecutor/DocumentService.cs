@@ -34,6 +34,11 @@ public class DocumentService
         _scopeFactory = scopeFactory;
     }
 
+    public static bool ExecuteSupported(Type infoType)
+    {
+        return _strategies.Keys.Any(x => x == infoType);
+    }
+
     public async Task AgreeExecuteAsync(DbDoc doc, DbClanPlayer signer)
     {
         if (doc.Info is not Decision info) return;

@@ -26,14 +26,14 @@ namespace AndNet.Manager.Shared.Models.Documentation.Info.Decision;
 public record Decision : DocInfo
 {
     public ImmutableList<Vote> Votes { get; set; } = ImmutableList<Vote>.Empty;
-    public double MinYesVotesPercent { get; set; } = 2d / 3d;
+    public double MinYesVotesPercent { get; set; } = 1d;
     public bool? IsExecuted { get; set; }
     public int? ExecutorId { get; set; }
     public DateTime? ExecuteDate { get; set; }
 
 
     [JsonIgnore]
-    public virtual int ActualVotes => Votes.Count(x => x.VoteType is VoteType.Yes or VoteType.No);
+    public virtual int ActualVotes => Votes.Count(x => x.VoteType is not VoteType.Abstain);
 
     [JsonIgnore]
     public int BlockingVotes => Votes.Count(x => x.VoteType is VoteType.NeedMoreInfo);
@@ -45,10 +45,13 @@ public record Decision : DocInfo
     public int NoVotes => Votes.Count(x => x.VoteType is VoteType.No);
 
     [JsonIgnore]
-    public double VotedPercent => (double)(ActualVotes + BlockingVotes) / Votes.Count;
+    public double VotedPercent => Votes.Count(x => x.VoteType is not VoteType.None);
 
     [JsonIgnore]
     public double AgreePercent => (double)YesVotes / ActualVotes;
+
+    [JsonIgnore]
+    public double DeclinePercent => (double)NoVotes / ActualVotes;
 
     [JsonIgnore]
     public bool IsAgreeAvailable => MinYesVotesPercent == 0d
@@ -56,9 +59,12 @@ public record Decision : DocInfo
                                                                            && !IsExecuted.HasValue);
 
     [JsonIgnore]
-    public bool IsDeclineAvailable => MinYesVotesPercent == 0d
-                                      || (!(AgreePercent >= MinYesVotesPercent) && BlockingVotes == 0
-                                          && !IsExecuted.HasValue);
+    public bool IsDeclineAvailable => !IsAgreeAvailable
+                                      && (DeclinePercent > MinYesVotesPercent
+                                          || Votes.Count(x => x.VoteType is VoteType.None or VoteType.Yes)
+                                          / (double)ActualVotes < MinYesVotesPercent)
+                                      && BlockingVotes == 0
+                                      && !IsExecuted.HasValue;
 
     public record Vote
     {

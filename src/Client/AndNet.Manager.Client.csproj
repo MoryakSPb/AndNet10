@@ -14,12 +14,12 @@
 	<ItemGroup>
 		<PackageReference Include="AspNetCore.SassCompiler" Version="1.63.6" />
 		<PackageReference Include="Blazor-ApexCharts" Version="0.9.21-beta" />
-		<PackageReference Include="Blazor.Bootstrap" Version="1.9.1" />
+		<PackageReference Include="Blazor.Bootstrap" Version="1.9.4" />
 		<PackageReference Include="Markdig" Version="0.31.0" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.8" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.8" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="7.0.8" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.8" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.9" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.9" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="7.0.9" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.9" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
 	</ItemGroup>
 
@@ -28,13 +28,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<_ContentIncludedByDefault Remove="Pages\Council.razor" />
 		<_ContentIncludedByDefault Remove="Pages\Document.razor" />
+		<_ContentIncludedByDefault Remove="Pages\DocumentCreator.razor" />
 		<_ContentIncludedByDefault Remove="Pages\Documents.razor" />
 		<_ContentIncludedByDefault Remove="Pages\Elections.razor" />
 		<_ContentIncludedByDefault Remove="Pages\PlayerApplicationResult.razor" />
 		<_ContentIncludedByDefault Remove="Pages\PlayerEditor.razor" />
-		<_ContentIncludedByDefault Remove="Shared\DecisionCard.razor" />
+		<_ContentIncludedByDefault Remove="Pages\Rules.razor" />
+		<_ContentIncludedByDefault Remove="Shared\Documents\DocumentVote.razor" />
+		<_ContentIncludedByDefault Remove="Shared\Expedition\ExpeditionCreateDialog.razor" />
 		<_ContentIncludedByDefault Remove="Shared\Player\AwardTypeCount.razor" />
 		<_ContentIncludedByDefault Remove="Shared\Player\PlayerInfoBlock.razor" />
 		<_ContentIncludedByDefault Remove="Shared\RedirectToLogin.razor" />
@@ -53,8 +55,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="Shared\Expedition\" />
-		<Folder Include="Shared\Documents\" />
 		<Folder Include="wwwroot\images\application_help\steam\" />
 	</ItemGroup>
 
@@ -88,11 +88,19 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<UpToDateCheckInput Remove="Pages\Council.razor" />
+	  <UpToDateCheckInput Remove="Shared\Documents\DocumentVote.razor" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<UpToDateCheckInput Remove="Shared\DecisionCard.razor" />
+	  <UpToDateCheckInput Remove="Shared\Expedition\ExpeditionCreateDialog.razor" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <UpToDateCheckInput Remove="Pages\DocumentCreator.razor" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <UpToDateCheckInput Remove="Pages\Rules.razor" />
 	</ItemGroup>
 
 </Project>

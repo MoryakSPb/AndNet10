@@ -8,7 +8,7 @@ public record Award(int Id, bool IsMarkedForDelete, uint Version, AwardType Awar
 
 public record Expedition(int Id, bool IsMarkedForDelete, uint Version,
     DateTime StartDate, DateTime EndDate, ulong? DiscordRoleId, int CommanderId, bool IsActive,
-    int[]? Players = null);
+    IReadOnlyCollection<int>? Players = null);
 
 public record PlayerContact
     (bool IsMarkedForDelete, uint Version, int PlayerId, string Type, string Value);

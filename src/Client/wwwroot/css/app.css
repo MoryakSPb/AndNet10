@@ -1,4 +1,4 @@
-#blazor-error-ui {
+п»ї#blazor-error-ui {
     background: lightyellow;
     bottom: 0;
     box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
@@ -54,4 +54,4 @@
     text-align: center;
 }
 
-.loading-progress-text:after { content: var(--blazor-load-percentage-text, "Загрузка"); }
+.loading-progress-text:after { content: var(--blazor-load-percentage-text, "Р—Р°РіСЂСѓР·РєР°"); }

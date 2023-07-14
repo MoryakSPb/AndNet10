@@ -1,13 +1,13 @@
-﻿@page "/documents"
+﻿@attribute [Authorize(Roles = "member")]
+@page "/documents"
 @using AndNet.Manager.Shared.Models.Documentation
-@using AndNet.Manager.Client.Shared.Documents
 @layout MainLayout
 
 @if (Docs is not null)
 {
     @foreach (Doc doc in Docs)
     {
-        <DocumentCard Document="doc"/>
+        <DocumentCard Id="doc.Id" LoadBody="false"/>
     }
     <nav class="d-flex flex-row justify-content-center">
         <ul class="pagination">
@@ -51,9 +51,9 @@ else
     <Header>
         <div class="btn-toolbar mt-1 px-3 d-flex flex-row" role="toolbar">
             <div class="btn-group me-2" role="group">
-                <button type="button" class="btn btn-success" disabled title="Создать новый документ…">
+                <a type="button" class="btn btn-success" title="Создать новый документ…" href="/document/new">
                     <i class="bi bi-file-plus"></i>
-                </button>
+                </a>
             </div>
             <div class="input-group d-flex flex-row flex-grow-1">
                 <input type="search" class="form-control flex-fill" placeholder="Поиск по содержимому…" @bind="@SearchString" @onkeydown="OnKeyDownSearch">
@@ -72,13 +72,13 @@ else
             <label class="form-label">Быстрый фильтр</label>
             <div class="btn-group" role="group">
 
-                <button type="button" class="btn btn-primary" title="Действующие директивы">
+                <button type="button" class="btn btn-primary" title="Действующие директивы" @onclick="async () => await DirectiveFilter()">
                     <i class="bi bi-file-earmark-font"></i>
                 </button>
-                <button type="button" class="btn btn-primary" title="Решения на рассмотрении">
+                <button type="button" class="btn btn-primary" title="Решения на рассмотрении" @onclick="async () => await DecisionFilter()">
                     <i class="bi bi-diamond-half"></i>
                 </button>
-                <button type="button" class="btn btn-secondary" title="Сброс">
+                <button type="button" class="btn btn-secondary" title="Сброс" @onclick="async () => await RestoreFilters()">
                     <i class="bi bi-x"></i>
                 </button>
             </div>
@@ -104,8 +104,8 @@ else
         {
             <div class="d-flex flex-column justify-content-between mb-3">
                 <label class="form-label">Статус директивы</label>
-                <select class="form-select">
-                    <option>Все</option>
+                <select class="form-select" @bind="DirectiveStatus">
+                    <option value="@(default(int?))">Все</option>
                     <option value="1">Действует</option>
                     <option value="-1">Отменена</option>
                     <option value="-2">Не принята</option>
@@ -116,8 +116,8 @@ else
         {
             <div class="d-flex flex-column justify-content-between mb-3">
                 <label class="form-label">Статус решения</label>
-                <select class="form-select">
-                    <option>Все</option>
+                <select class="form-select" @bind="DecisionStatus">
+                    <option value="@(default(int?))">Все</option>
                     <option value="0">Не рассмотрении</option>
                     <option value="-1">Отклонено</option>
                     <option value="1">Исполнено</option>

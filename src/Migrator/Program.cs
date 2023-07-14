@@ -1,4 +1,5 @@
-﻿using AndNet.Manager.Database;
+﻿using AndNet.Integration.Discord.Services;
+using AndNet.Manager.Database;
 using AndNet.Manager.DocumentExecutor;
 using AndNet.Migrator.AndNet7;
 using AndNet.Migrator.AndNet7.AndNet7;
@@ -11,6 +12,8 @@ AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 
+DiscordService.SilentMode = true;
+builder.Services.AddSingleton<DiscordService>();
 builder.Services.AddDocumentService();
 
 builder.Services.AddDbContext<ClanContext>(x => x.UseNpgsql(builder.Configuration.GetConnectionString("OldPostgres")));

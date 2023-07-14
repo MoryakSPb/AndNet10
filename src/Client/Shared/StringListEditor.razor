@@ -1,0 +1,29 @@
+﻿@foreach (string str in GetItems())
+{
+    <div class="mb-1 d-flex flex-row">
+        <input type="text" class="form-control" readonly value="@str">
+        <button class="btn btn-danger" @onclick="() => { RemoveItem(str); StateHasChanged(); }">
+            <i class="bi bi-trash"></i>
+        </button>
+    </div>
+}
+<div class="mb-1 d-flex flex-row">
+    <input type="text" class="form-control me-1" @bind="NewString">
+    <button disabled="@string.IsNullOrWhiteSpace(NewString)" class="btn btn-success" @onclick="() => { AddItem(NewString); NewString = string.Empty; StateHasChanged(); }">
+        <i class="bi bi-plus-lg"></i>
+    </button>
+</div>
+
+@code {
+    public string NewString { get; set; } = string.Empty;
+
+    [Parameter]
+    public Action<string> AddItem { get; set; } = null!;
+
+    [Parameter]
+    public Action<string> RemoveItem { get; set; } = null!;
+
+    [Parameter]
+    public Func<IEnumerable<string>> GetItems { get; set; } = null!;
+
+}

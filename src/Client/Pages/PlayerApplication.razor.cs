@@ -44,16 +44,14 @@ public partial class PlayerApplication : ComponentBase, IDisposable
         _validationMessageStore = new(editContext);
         editContext.OnFieldChanged += EditContextOnOnFieldChanged;
 
-        /*if (MarkdownPipeline is null)
-        {
-            MarkdownPipelineBuilder pipelineBuilder = new();
+
+        /*MarkdownPipelineBuilder pipelineBuilder = new();
             pipelineBuilder = pipelineBuilder
                 .UseAdvancedExtensions()
                 .UseBootstrap();
-            MarkdownPipeline = pipelineBuilder.Build();
-        }
+            MarkdownPipeline pipeline = pipelineBuilder.Build();
 
-        string rulesHtml = Markdown.ToHtml(await HttpClient.GetStringAsync("static/rules.md"), MarkdownPipeline);*/
+            string rulesHtml = Markdown.ToHtml(await HttpClient.GetStringAsync("static/rules.md"), pipeline);*/
         string rulesHtml = await HttpClient.GetStringAsync("static/rules.html");
         Rules = builder => builder.AddMarkupContent(0, rulesHtml);
     }
@@ -66,7 +64,7 @@ public partial class PlayerApplication : ComponentBase, IDisposable
         {
             case nameof(Model.SteamLink):
             {
-                HttpResponseMessage steamResult =
+                using HttpResponseMessage steamResult =
                     await HttpClient.GetAsync(
                         $"api/Application/steam?url={UrlEncoder.Default.Encode(Model.SteamLink)}");
                 if (steamResult.IsSuccessStatusCode)
@@ -83,7 +81,7 @@ public partial class PlayerApplication : ComponentBase, IDisposable
             }
             case nameof(Model.DiscordUsername):
             {
-                HttpResponseMessage discordResult =
+                using HttpResponseMessage discordResult =
                     await HttpClient.GetAsync(
                         $"api/Application/discord?username={UrlEncoder.Default.Encode(Model.DiscordUsername)}");
                 if (discordResult.IsSuccessStatusCode)

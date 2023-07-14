@@ -1,4 +1,5 @@
-﻿using AndNet.Manager.Database;
+﻿using AndNet.Integration.Discord.Services;
+using AndNet.Manager.Database;
 using AndNet.Manager.Database.Models;
 using AndNet.Manager.Database.Models.Auth;
 using AndNet.Manager.Database.Models.Player;
@@ -12,11 +13,15 @@ namespace AndNet.Manager.DocumentExecutor.Strategy;
 public class DecisionCouncilPlayerAcceptApplicationStrategy : DocStrategy
 {
     private readonly DatabaseContext _databaseContext;
+    private readonly DiscordService _discordService;
     private readonly UserManager<DbUser> _userManager;
 
-    public DecisionCouncilPlayerAcceptApplicationStrategy(DatabaseContext databaseContext)
+    public DecisionCouncilPlayerAcceptApplicationStrategy(DatabaseContext databaseContext,
+        UserManager<DbUser> userManager, DiscordService discordService)
     {
         _databaseContext = databaseContext;
+        _userManager = userManager;
+        _discordService = discordService;
     }
 
     public override async Task Execute(DbDoc doc, DbClanPlayer executor)
@@ -58,5 +63,11 @@ public class DecisionCouncilPlayerAcceptApplicationStrategy : DocStrategy
         newPlayer.CalcPlayer();
         _databaseContext.Update(newPlayer).State = EntityState.Modified;
         await _databaseContext.SaveChangesAsync().ConfigureAwait(false);
+        await _discordService.UpdateGuildNicknameAsync(newPlayer.DiscordId!.Value, newPlayer.ToString())
+            .ConfigureAwait(false);
+        await _discordService.UpdateGuildRolesAsync(newPlayer.DiscordId!.Value, (false, true, false))
+            .ConfigureAwait(false);
+        await _discordService.SendBotLogMessageAsync($"Игрок <@{target.DiscordId:D}> присоединяется к нашему клану!"
+                                                     + $"{Environment.NewLine}{Environment.NewLine}https://andromeda-se.xyz/document/{doc.Id:D}");
     }
 }

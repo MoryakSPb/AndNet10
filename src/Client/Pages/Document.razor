@@ -1,4 +1,5 @@
-﻿@page "/document/{id:int}"
+﻿@attribute [Authorize(Roles = "member")]
+@page "/document/{id:int}"
 @using AndNet.Manager.Shared.Models.Documentation
 @using AndNet.Manager.Shared.Models.Documentation.Info
 @using AndNet.Manager.Shared.Models.Documentation.Info.Decision
@@ -9,189 +10,142 @@
 @Body
 
 <LayoutSetter>
-<Header>
+    <Header>
 
-</Header>
-<Aside>
-@if (Doc is not null)
-{
-    @if (Doc.ParentId is not null)
-    {
-        <InfoBlock Key="Родительский документ" Value="@($"№{Doc.ParentId.Value}")" Link="@($"/document/{Doc.ParentId.Value}")"/>
-    }
-
-    <InfoBlock Key="Дата и время создания" Value="@Doc.CreationDate.ToString("g")"/>
-    <InfoBlock Key="Автор" Value="@AuthorNickname" Link="@($"/player/{Doc.AuthorId}")"/>
-    <InfoBlock Key="Тип" Value="@DocRules.DocNames[Doc.Info?.GetType() ?? typeof(DocInfo)]"/>
-    @if (Doc.ChildIds.Any())
-    {
-        <div class="d-flex flex-column justify-content-between mb-2">
-            <label>Дочерние документы</label>
-            @foreach (int child in Doc.ChildIds)
-            {
-                <a href="/document/@child">№@child</a>
-            }
-        </div>
-    }
-    @if (Doc.Info is ProtocolInfo protocolInfo)
-    {
-        <InfoBlock Key="Тип протокола" Value="@DocRules.ProtocolTypeNames[protocolInfo.ProtocolType]"/>
-        <div class="d-flex flex-column justify-content-between mb-2">
-            <label>Участники</label>
-            @foreach (int id in protocolInfo.Members)
-            {
-                <a href="player/@id.ToString("D")">@VotersNicknames[id]</a>
-            }
-        </div>
-    }
-    @if (Doc.Info is DirectiveInfo directiveInfo)
-    {
-        <InfoBlock Key="Статус директивы" Value="@DocRules.DirectiveStatusNames[directiveInfo.Status]"/>
-
-        @if (directiveInfo.AcceptanceDate.HasValue)
+    </Header>
+    <Aside>
+        @* ReSharper disable MethodHasAsyncOverload *@
+        @if (Doc is not null)
         {
-            <InfoBlock Key="Дата принятия" Value="@directiveInfo.AcceptanceDate.Value.ToShortDateString()"/>
-        }
-        @if (directiveInfo.CancelDate.HasValue)
-        {
-            <InfoBlock Key="Дата отмены" Value="@directiveInfo.CancelDate.Value.ToShortDateString()"/>
-        }
-        @if (directiveInfo.ReplacedById.HasValue)
-        {
-            <InfoBlock Key="Заменен на" Value="@($"№{directiveInfo.ReplacedById.Value}")" Link="@($"document/{directiveInfo.ReplacedById.Value}")"/>
-        }
-    }
-    @if (Doc.Info is Decision decision)
-    {
-        @if (Doc.Info is DecisionCouncilDirective decisionCouncilDirective)
-        {
-            <InfoBlock Key="Директива" Value="@($"№{decisionCouncilDirective.DirectiveId}")" Link="@($"document/{decisionCouncilDirective.DirectiveId:D}")"/>
-            @if (Doc.Info is DecisionCouncilDirectiveChange decisionCouncilDirectiveChange)
+            @if (Doc.ParentId is not null)
             {
-                <InfoBlock Key="Замена на" Value="@($"№{decisionCouncilDirectiveChange.NewDirectiveId}")" Link="@($"document/{decisionCouncilDirectiveChange.NewDirectiveId:D}")"/>
+                <InfoBlock Key="Родительский документ" Value="@($"№{Doc.ParentId.Value}")" Link="@($"/document/{Doc.ParentId.Value}")"/>
             }
-            else
+            @if (Doc.ChildIds.Any())
             {
-                <InfoBlock Key="Действие над директивой" Value="@DocRules.DirectiveActionNames[decisionCouncilDirective.Action]"/>
-            }
-        }
-        @if (Doc.Info is DecisionCouncilExpedition decisionCouncilExpedition)
-        {
-            @if (decisionCouncilExpedition.ExpeditionId != 0)
-            {
-                <InfoBlock Key="Экспедиция" Value="@($"№{decisionCouncilExpedition.ExpeditionId}")" Link="@($"expedition/{decisionCouncilExpedition.ExpeditionId:D}")"/>
-            }
-            @if (Doc.Info is DecisionCouncilExpeditionCreate decisionCouncilExpeditionCreate)
-            {
-                <InfoBlock Key="Действие над экспедицией" Value="Создать"/>
-                <InfoBlock Key="Командир" Value="@VotersNicknames[decisionCouncilExpeditionCreate.AccountablePlayerId]" Link="@($"/player/{decisionCouncilExpeditionCreate.AccountablePlayerId:D}")"/>
-                <InfoBlock Key="Длительность (сутки)" Value="@decisionCouncilExpeditionCreate.Duration.TotalDays.ToString("F3")"/>
                 <div class="d-flex flex-column justify-content-between mb-2">
-                    <label>Участники</label>
-                    @foreach (int memberId in decisionCouncilExpeditionCreate.Members)
+                    <label>Дочерние документы</label>
+                    @foreach (int child in Doc.ChildIds)
                     {
-                        <a href="player/@memberId.ToString("D")">@VotersNicknames[memberId]</a>
+                        <a href="/document/@child">№@child</a>
                     }
                 </div>
             }
-            @if (Doc.Info is DecisionCouncilExpeditionClose)
-            {
-                <InfoBlock Key="Действие над экспедицией" Value="Закрыть"/>
-            }
-            @if (Doc.Info is DecisionCouncilExpeditionPlayer decisionCouncilExpeditionPlayer)
-            {
-                <InfoBlock Key="Действие над экспедицией" Value="@DocRules.ExpeditionPlayerActionNames[decisionCouncilExpeditionPlayer.Action]"/>
-                <InfoBlock Key="Игрок" Value="@VotersNicknames[decisionCouncilExpeditionPlayer.PlayerId]" Link="@($"/player/{decisionCouncilExpeditionPlayer.PlayerId}")"/>
-            }
-        }
-        @if (Doc.Info is DecisionCouncilExpeditionProlongation decisionCouncilExpeditionProlongation)
-        {
-            <InfoBlock Key="Действие над экспедицией" Value="Продлить"/>
-            <InfoBlock Key="Дополнительное время (сутки)" Value="@decisionCouncilExpeditionProlongation.ProlongationTime.TotalDays.ToString("F3")"/>
-        }
-    }
-    @if (Doc.Info is DecisionCouncilPlayer decisionCouncilPlayer)
-    {
-        <InfoBlock Key="Игрок" Value="@VotersNicknames[decisionCouncilPlayer.PlayerId]" Link="@($"/player/{decisionCouncilPlayer.PlayerId:D}")"/>
-        @if (Doc.Info is DecisionCouncilPlayerAwardSheet decisionCouncilPlayerAwardSheet)
-        {
-            <InfoBlock Key="Тип награды" Value="@AwardRules.Names[decisionCouncilPlayerAwardSheet.AwardType]"/>
-            <InfoBlock Key="Описание награды" Value="@decisionCouncilPlayerAwardSheet.Description"/>
-            @if (decisionCouncilPlayerAwardSheet.AutomationId is not null)
-            {
-                <InfoBlock Key="Идентификатор автоматизации" Value="@decisionCouncilPlayerAwardSheet.AutomationId.Value.ToString("D")"/>
-            }
-        }
-        @if (Doc.Info is DecisionCouncilPlayerAcceptApplication decisionCouncilPlayerAcceptApplication)
-        {
-            <InfoBlock Key="Рекомендация" Value="@decisionCouncilPlayerAcceptApplication.Recommendation"/>
-            <InfoBlock Key="Часов в игре" Value="@(decisionCouncilPlayerAcceptApplication.Hours?.ToString("F0") ?? "—")"/>
-            <InfoBlock Key="Возраст" Value="@(decisionCouncilPlayerAcceptApplication.Age?.ToString("D") ?? "—")"/>
-        }
 
-        @if (Doc.Info is Decision { Votes.Count: > 0, MinYesVotesPercent: > 0.0 } voteDecision)
-        {
-            <InfoBlock Key="Процент для принятия" Value="@voteDecision.MinYesVotesPercent.ToString("P0")"/>
-            <InfoBlock Key="Решение" Value="@(voteDecision.IsExecuted.HasValue ? voteDecision.IsExecuted.Value ? "Принять" : "Отклонить" : "На рассмотрении")"/>
-            @if (voteDecision.IsExecuted == true)
-            {
-                <InfoBlock Key="Исполнитель" Value="@AuthorNickname" Link="@($"/player/{Doc.AuthorId}")"/>
-                <InfoBlock Key="Дата и время исполнения" Value="@voteDecision.ExecuteDate?.ToString("g")"/>
-            }
+            <InfoBlock Key="Тип" Value="@DocRules.DocNames[Doc.Info?.GetType() ?? typeof(DocInfo)]"/>
+            <InfoBlock Key="Дата и время создания" Value="@Doc.CreationDate.ToString("g")"/>
+            <InfoBlock Key="Автор" Value="@(PlayerNicknamesService.GetFullNicknameFromCache(Doc.AuthorId))" Link="@($"/player/{Doc.AuthorId}")"/>
 
-            <div class="d-flex flex-column justify-content-between mb-2">
-                <label class="mb-1">Распределение голосов</label>
-                <div class="progress mb-1" role="progressbar">
-                    <div class="progress-bar bg-success" style="width: @(voteDecision.YesVotes / (double)voteDecision.Votes.Count * 100d)%">
-                        @((voteDecision.YesVotes / (double)voteDecision.Votes.Count).ToString("P0"))
-                    </div>
-                    <div class="progress-bar bg-danger" style="width: @(voteDecision.NoVotes / (double)voteDecision.Votes.Count * 100d)%">
-                        @((voteDecision.NoVotes / (double)voteDecision.Votes.Count).ToString("P0"))
-                    </div>
-                    <div class="progress-bar bg-info" style="width: @(voteDecision.BlockingVotes / (double)voteDecision.Votes.Count * 100d)%">
-                        @((voteDecision.BlockingVotes / (double)voteDecision.Votes.Count).ToString("P0"))
-                    </div>
-                    <div class="progress-bar bg-warning" style="width: @(voteDecision.Votes.Count(x => x.VoteType is VoteType.Abstain) / (double)voteDecision.Votes.Count * 100d)%">
-                        @((voteDecision.Votes.Count(x => x.VoteType is VoteType.Abstain) / (double)voteDecision.Votes.Count).ToString("P0"))
-                    </div>
-                    <div class="progress-bar bg-secondary" style="width: @(voteDecision.Votes.Count(x => x.VoteType is VoteType.None) / (double)voteDecision.Votes.Count * 100d)%">
-                        @((voteDecision.Votes.Count(x => x.VoteType is VoteType.None) / (double)voteDecision.Votes.Count).ToString("P0"))
-                    </div>
+
+            @if (Doc.Info is ProtocolInfo protocolInfo)
+            {
+                <InfoBlock Key="Тип протокола" Value="@DocRules.ProtocolTypeNames[protocolInfo.ProtocolType]"/>
+                <div class="d-flex flex-column justify-content-between mb-2">
+                    <label>Участники</label>
+                    @foreach (int id in protocolInfo.Members)
+                    {
+                        <a href="player/@id.ToString("D")">@(PlayerNicknamesService.GetFullNicknameFromCache(id))</a>
+                    }
                 </div>
+            }
+            @if (Doc.Info is DirectiveInfo directiveInfo)
+            {
+                <InfoBlock Key="Статус директивы" Value="@DocRules.DirectiveStatusNames[directiveInfo.Status]"/>
 
-                <div class="row mb-1">
-                    <div class="col d-flex flex-column align-items-center justify-content-start">
-                        <button class="btn btn-outline-primary  m-1" disabled="@(!VoteEnabled)" @onclick="async () => await Vote(VoteType.Yes)">
-                            <i class="bi bi-check-circle-fill text-success"></i>
-                        </button>
-                        <span class="text-success-emphasis text-center">@voteDecision.YesVotes.ToString("D")</span>
-                    </div>
-                    <div class="col d-flex flex-column align-items-center justify-content-start">
-                        <button class="btn btn-outline-primary m-1" disabled="@(!VoteEnabled)" @onclick="async () => await Vote(VoteType.No)">
-                            <i class="bi bi-x-circle-fill text-danger"></i>
-                        </button>
-                        <span class="text-danger-emphasis text-center">@voteDecision.NoVotes.ToString("D")</span>
-                    </div>
-                    <div class="col d-flex flex-column align-items-center justify-content-start">
-                        <button class="btn btn-outline-primary m-1" disabled="@(!VoteEnabled)" @onclick="async () => await Vote(VoteType.NeedMoreInfo)">
-                            <i class="bi bi-question-circle-fill text-info"></i>
-                        </button>
-                        <td class="text-info-emphasis text-center">@voteDecision.BlockingVotes.ToString("D")</td>
-                    </div>
-                    <div class="col d-flex flex-column align-items-center justify-content-start">
-                        <button class="btn btn-outline-primary  m-1" disabled="@(!VoteEnabled)" @onclick="async () => await Vote(VoteType.Abstain)">
-                            <i class="bi bi-circle-half text-warning"></i>
-                        </button>
-                        <td class="text-warning-emphasis text-center">@voteDecision.Votes.Count(x => x.VoteType is VoteType.Abstain).ToString("D")</td>
-                    </div>
-                    <div class="col d-flex flex-column align-items-center justify-content-start">
-                        <button class="btn btn-outline-primary m-1" disabled>
-                            <i class="bi bi-circle text-secondary"></i>
-                        </button>
-                        <td class="text-secondary-emphasis text-center">@voteDecision.Votes.Count(x => x.VoteType is VoteType.None).ToString("D")</td>
-                    </div>
-                </div>
+                @if (directiveInfo.AcceptanceDate.HasValue)
+                {
+                    <InfoBlock Key="Дата принятия" Value="@directiveInfo.AcceptanceDate.Value.ToShortDateString()"/>
+                }
+                @if (directiveInfo.CancelDate.HasValue)
+                {
+                    <InfoBlock Key="Дата отмены" Value="@directiveInfo.CancelDate.Value.ToShortDateString()"/>
+                }
+                @if (directiveInfo.ReplacedById.HasValue)
+                {
+                    <InfoBlock Key="Заменен на" Value="@($"№{directiveInfo.ReplacedById.Value}")" Link="@($"document/{directiveInfo.ReplacedById.Value}")"/>
+                }
+            }
+            @if (Doc.Info is Decision decision)
+            {
+                @if (Doc.Info is DecisionCouncilDirective decisionCouncilDirective)
+                {
+                    <InfoBlock Key="Директива" Value="@($"№{decisionCouncilDirective.DirectiveId}")" Link="@($"document/{decisionCouncilDirective.DirectiveId:D}")"/>
+                    @if (Doc.Info is DecisionCouncilDirectiveChange decisionCouncilDirectiveChange)
+                    {
+                        <InfoBlock Key="Замена на" Value="@($"№{decisionCouncilDirectiveChange.NewDirectiveId}")" Link="@($"document/{decisionCouncilDirectiveChange.NewDirectiveId:D}")"/>
+                    }
+                    else
+                    {
+                        <InfoBlock Key="Действие над директивой" Value="@DocRules.DirectiveActionNames[decisionCouncilDirective.Action]"/>
+                    }
+                }
+                @if (Doc.Info is DecisionCouncilExpedition decisionCouncilExpedition)
+                {
+                    @if (decisionCouncilExpedition.ExpeditionId != 0)
+                    {
+                        <InfoBlock Key="Экспедиция" Value="@($"№{decisionCouncilExpedition.ExpeditionId}")" Link="@($"expedition/{decisionCouncilExpedition.ExpeditionId:D}")"/>
+                    }
+                    @if (Doc.Info is DecisionCouncilExpeditionCreate decisionCouncilExpeditionCreate)
+                    {
+                        <InfoBlock Key="Действие над экспедицией" Value="Создать"/>
+                        <InfoBlock Key="Командир" Value="@(PlayerNicknamesService.GetFullNicknameFromCache(decisionCouncilExpeditionCreate.AccountablePlayerId))" Link="@($"/player/{decisionCouncilExpeditionCreate.AccountablePlayerId:D}")"/>
+                        <InfoBlock Key="Длительность (сутки)" Value="@decisionCouncilExpeditionCreate.Duration.TotalDays.ToString("F3")"/>
+                        <div class="d-flex flex-column justify-content-between mb-2">
+                            <label>Участники</label>
+                            @foreach (int memberId in decisionCouncilExpeditionCreate.Members)
+                            {
+                                <a href="player/@memberId.ToString("D")">@(PlayerNicknamesService.GetFullNicknameFromCache(memberId))</a>
+                            }
+                        </div>
+                    }
+                    @if (Doc.Info is DecisionCouncilExpeditionClose)
+                    {
+                        <InfoBlock Key="Действие над экспедицией" Value="Закрыть"/>
+                    }
+                    @if (Doc.Info is DecisionCouncilExpeditionPlayer decisionCouncilExpeditionPlayer)
+                    {
+                        <InfoBlock Key="Действие над экспедицией" Value="@DocRules.ExpeditionPlayerActionNames[decisionCouncilExpeditionPlayer.Action]"/>
+                        <InfoBlock Key="Игрок" Value="@(PlayerNicknamesService.GetFullNicknameFromCache(decisionCouncilExpeditionPlayer.PlayerId))" Link="@($"/player/{decisionCouncilExpeditionPlayer.PlayerId}")"/>
+                    }
+                }
+                @if (Doc.Info is DecisionCouncilExpeditionProlongation decisionCouncilExpeditionProlongation)
+                {
+                    <InfoBlock Key="Действие над экспедицией" Value="Продлить"/>
+                    <InfoBlock Key="Дополнительное время (сутки)" Value="@decisionCouncilExpeditionProlongation.ProlongationTime.TotalDays.ToString("F3")"/>
+                }
+            }
+            @if (Doc.Info is DecisionCouncilPlayer decisionCouncilPlayer)
+            {
+                <InfoBlock Key="Игрок" Value="@(PlayerNicknamesService.GetFullNicknameFromCache(decisionCouncilPlayer.PlayerId))" Link="@($"/player/{decisionCouncilPlayer.PlayerId:D}")"/>
+                @if (Doc.Info is DecisionCouncilPlayerAwardSheet decisionCouncilPlayerAwardSheet)
+                {
+                    <InfoBlock Key="Тип награды" Value="@AwardRules.Names[decisionCouncilPlayerAwardSheet.AwardType]"/>
+                    <InfoBlock Key="Описание награды" Value="@decisionCouncilPlayerAwardSheet.Description"/>
+                    @if (decisionCouncilPlayerAwardSheet.AutomationId is not null)
+                    {
+                        <InfoBlock Key="Идентификатор автоматизации" Value="@decisionCouncilPlayerAwardSheet.AutomationId.Value.ToString("D")"/>
+                    }
+                }
+                @if (Doc.Info is DecisionCouncilPlayerAcceptApplication decisionCouncilPlayerAcceptApplication)
+                {
+                    <InfoBlock Key="Рекомендация" Value="@decisionCouncilPlayerAcceptApplication.Recommendation"/>
+                    <InfoBlock Key="Часов в игре" Value="@(decisionCouncilPlayerAcceptApplication.Hours?.ToString("F0") ?? "—")"/>
+                    <InfoBlock Key="Возраст" Value="@(decisionCouncilPlayerAcceptApplication.Age?.ToString("D") ?? "—")"/>
+                }
+            }
 
+            @if (Doc.Info is Decision { Votes.Count: > 0, MinYesVotesPercent: > 0.0 } voteDecision)
+            {
+                <InfoBlock Key="Порог принятия" Value="@(voteDecision.MinYesVotesPercent < 0.01 ? "1 голос" : voteDecision.MinYesVotesPercent.ToString("P0"))"/>
+                <InfoBlock Key="Решение" Value="@(voteDecision.IsExecuted.HasValue ? voteDecision.IsExecuted.Value ? "Исполнено" : "Отклонено" : "На рассмотрении")"/>
+                @if (voteDecision.IsExecuted == true)
+                {
+                    <InfoBlock Key="Исполнитель" Value="@(PlayerNicknamesService.GetFullNicknameFromCache(Doc.AuthorId))" Link="@($"/player/{Doc.AuthorId}")"/>
+                    <InfoBlock Key="Дата и время исполнения" Value="@voteDecision.ExecuteDate?.ToString("g")"/>
+                }
+                <CascadingValue Value="this">
+                    <DocumentVote VoteDecision="voteDecision" DocId="Id"/>
+                </CascadingValue>
                 <table class="table table-sm">
                     <thead>
                     <tr>
@@ -204,11 +158,11 @@
                     </tr>
                     </thead>
                     <tbody>
-                    @foreach (Decision.Vote vote in voteDecision.Votes.OrderBy(x => VotersNicknames[x.PlayerId]))
+                    @foreach (Decision.Vote vote in voteDecision.Votes.OrderBy(x => PlayerNicknamesService.GetFullNicknameFromCache(x.PlayerId)))
                     {
                         <tr>
                             <td>
-                                <a href="/player/@vote.PlayerId">@VotersNicknames[vote.PlayerId]</a>
+                                <a href="/player/@vote.PlayerId">@PlayerNicknamesService.GetFullNicknameFromCache(vote.PlayerId)</a>
                             </td>
                             <td class="text-center">
                                 @switch (vote.VoteType)
@@ -236,14 +190,11 @@
                     }
                     </tbody>
                 </table>
-            </div>
+            }
+            <InfoBlock Key="Просмотров" Value="@Doc.Views.ToString()"/>
         }
-    }
+    </Aside>
+    <Footer>
 
-    <InfoBlock Key="Просмотров" Value="@Doc.Views.ToString()"/>
-}
-</Aside>
-<Footer>
-
-</Footer>
+    </Footer>
 </LayoutSetter>

@@ -70,4 +70,14 @@ public static class DocRules
             .Add(ExpeditionPlayerAction.Add, "Включить игрока в состав")
             .Add(ExpeditionPlayerAction.Remove, "Исключить игрока из состава")
             .Add(ExpeditionPlayerAction.ChangeCommander, "Назначить нового командира");
+
+    public static string GetDecisionStatus(bool? key)
+    {
+        return key switch
+        {
+            true => "Принято",
+            false => "Отклонено",
+            null => "На рассмотрении"
+        };
+    }
 }

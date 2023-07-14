@@ -60,8 +60,7 @@ public class LoginController : ControllerBase
     [AllowAnonymous]
     [ProducesResponseType(typeof(ClaimRecord[]), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
-    [ResponseCache(Duration = 588, Location = ResponseCacheLocation.Client)]
-    public async Task<ActionResult<IAsyncEnumerable<ClaimRecord>>> Name()
+    public async Task<ActionResult<IAsyncEnumerable<ClaimRecord>>> Claims()
     {
         if (!User.Identity?.IsAuthenticated ?? true) return Unauthorized();
         DbUser? user = await _userManager.GetUserAsync(HttpContext.User).ConfigureAwait(false);
@@ -78,6 +77,16 @@ public class LoginController : ControllerBase
                 return new ClaimRecord(x.Type, value, x.Issuer, x.OriginalIssuer, x.ValueType);
             })
             .ToAsyncEnumerable());
+    }
+
+    [HttpHead("claims")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ResponseCache(NoStore = true)]
+    public IActionResult ClaimsHead()
+    {
+        return User.Identity?.IsAuthenticated ?? false ? Ok() : Unauthorized();
     }
 
     [HttpGet("logout")]

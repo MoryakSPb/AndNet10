@@ -1,0 +1,45 @@
+﻿<div class="mb-3">
+    <label class="form-label">Длительность</label>
+    <input type="number" class="form-control" min="7" max="30" @bind="Days">
+</div>
+<div class="mb-3">
+    <label class="form-label">Командир</label>
+    <select class="form-select" disabled>
+        @if (MeId != 0)
+        {
+            <option selected>@PlayerNicknamesService.GetFullNicknameFromCache(MeId)</option>
+        }
+    </select>
+</div>
+<div class="mb-3">
+    <label class="form-label">Игроки</label>
+    @if (Players is not null)
+    {
+        <PlayerSelect @ref="PlayerSelect"
+                      AllPlayers="AllPlayers"
+                      MaxSelectedPlayers="4"
+                      LockedPlayers="LockedPlayers"
+                      SelectedPlayers="SelectedPlayers"
+                      Update="() => { SelectedPlayerCount = PlayerSelect.SelectedCount; }"/>
+    }
+</div>
+<div class="mb-3">
+    <label class="form-label">Описание, цели и задачи</label>
+    <textarea class="form-control" rows="5" @bind="Description"></textarea>
+</div>
+
+<div class="mb-3">
+    <div class="d-grid gap-2">
+        <button class="btn btn-primary"
+                type="button"
+                disabled="@(DocumentId is not null || string.IsNullOrWhiteSpace(Description) || SelectedPlayerCount < 2)"
+                @onclick="async () => await Send()">
+            Отправить
+        </button>
+
+    </div>
+    @if (DocumentId is not null)
+    {
+        <span class="form-text">Создан документ <a href="document/@DocumentId.Value">№@DocumentId.Value</a></span>
+    }
+</div>

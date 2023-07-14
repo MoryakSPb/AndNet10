@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.IO.Hashing;
 using AndNet.Manager.Database;
 using AndNet.Manager.Database.Models;
 using AndNet.Manager.Database.Models.Auth;
@@ -33,8 +34,8 @@ public class ElectionController : Controller
         _documentService = documentService;
     }
 
-    [HttpGet]
-    public async Task<Election> GetCurrent()
+    [HttpGet("current")]
+    public async Task<ActionResult<Election>> GetCurrent()
     {
         DbElection result = await _context.Elections
                                 .Include(x => x.ElectionCandidates)
@@ -42,13 +43,22 @@ public class ElectionController : Controller
                                 .AsNoTracking()
                                 .FirstOrDefaultAsync(x => x.Stage != ElectionStage.Ended).ConfigureAwait(false)
                             ?? throw new InvalidOperationException();
+
+        ImmutableArray<byte> tag = Enumerable.Empty<uint>()
+            .Concat(result.ElectionCandidates.Select(x => x.Version))
+            .Concat(result.Voters.Select(x => x.Version))
+            .SelectMany(BitConverter.GetBytes)
+            .ToImmutableArray();
+        string eTag = $"W/\"{BitConverter.ToUInt64(XxHash64.Hash(tag.AsSpan(), result.Version))}\"";
+        if (Request.Headers.IfNoneMatch.ToString() == eTag) return StatusCode(StatusCodes.Status304NotModified);
+        Response.Headers.ETag = eTag;
         IImmutableList<ElectionCandidate> candidates = (result.Stage < ElectionStage.ResultsAnnounce
                 ? result.Candidates.Select(x => x with { Rating = 0 })
                 : result.Candidates)
             .OrderByDescending(x => x.Rating).ThenBy(x => x.RegistrationDate)
-            .ToImmutableList();
+            .ToImmutableArray();
 
-        return new()
+        return Ok(new Election
         {
             AllVotersCount = result.AllVotersCount,
             Candidates = candidates,
@@ -57,7 +67,7 @@ public class ElectionController : Controller
             Id = result.Id,
             Stage = result.Stage,
             VotedVotersCount = result.VotedVotersCount
-        };
+        });
     }
 
     [HttpGet("isVoted")]
@@ -81,33 +91,49 @@ public class ElectionController : Controller
         DbElectionVoter? voter = _context.ElectionsVoters.AsNoTracking()
             .FirstOrDefault(x => x.ElectionId == election.Id && x.PlayerId == playerId);
         if (voter is null) return Forbid();
+        string eTag = $"W/\"{voter.Version:D10}\"";
+        if (Request.Headers.IfNoneMatch.ToString() == eTag) return StatusCode(StatusCodes.Status304NotModified);
+        Response.Headers.ETag = eTag;
         return Ok(voter.VoteDate is not null);
     }
 
-    [HttpGet("all")]
-    public async IAsyncEnumerable<Election> GetAll()
+    [HttpGet]
+    public IAsyncEnumerable<int> GetAll()
     {
-        await foreach (DbElection election in _context.Elections
-                           .Include(x => x.ElectionCandidates)
-                           .Include(x => x.Voters)
-                           .AsNoTracking()
-                           .OrderByDescending(x => x.ElectionEnd)
-                           .ToAsyncEnumerable().ConfigureAwait(false))
+        return _context.Elections
+            .Include(x => x.ElectionCandidates)
+            .Include(x => x.Voters)
+            .AsNoTracking()
+            .OrderByDescending(x => x.ElectionEnd)
+            .Select(x => x.Id)
+            .ToAsyncEnumerable();
+    }
+
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<Election>> Get(int id)
+    {
+        DbElection? election = await _context.Elections
+            .Include(x => x.ElectionCandidates)
+            .Include(x => x.Voters)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+        if (election is null) return NotFound();
+        string eTag = $"W/\"{election.Version:D10}\"";
+        if (Request.Headers.IfNoneMatch.ToString() == eTag) return StatusCode(StatusCodes.Status304NotModified);
+        Response.Headers.ETag = eTag;
+        IImmutableList<ElectionCandidate> candidates = election.Stage < ElectionStage.ResultsAnnounce
+            ? election.Candidates.Select(x => x with { Rating = 0 }).ToImmutableList()
+            : election.Candidates;
+        return new Election
         {
-            IImmutableList<ElectionCandidate> candidates = election.Stage < ElectionStage.ResultsAnnounce
-                ? election.Candidates.Select(x => x with { Rating = 0 }).ToImmutableList()
-                : election.Candidates;
-            yield return new()
-            {
-                AllVotersCount = election.AllVotersCount,
-                Candidates = candidates,
-                CouncilCapacity = election.CouncilCapacity,
-                ElectionEnd = election.ElectionEnd,
-                Id = election.Id,
-                Stage = election.Stage,
-                VotedVotersCount = election.VotedVotersCount
-            };
-        }
+            AllVotersCount = election.AllVotersCount,
+            Candidates = candidates,
+            CouncilCapacity = election.CouncilCapacity,
+            ElectionEnd = election.ElectionEnd,
+            Id = election.Id,
+            Stage = election.Stage,
+            VotedVotersCount = election.VotedVotersCount
+        };
     }
 
     [HttpPatch]
@@ -124,7 +150,7 @@ public class ElectionController : Controller
         int playerId = await _context.ClanPlayers
             .Where(x => x.IdentityId == user.Id
                         && !(x.OnReserve
-                             || x.Rank < PlayerRank.MiddleSpecialist
+                             || x.Rank < PlayerRank.Specialist2nd
                              || x.Rank == PlayerRank.FirstAdvisor))
             .Take(1).Select(x => x.Id)
             .FirstOrDefaultAsync()

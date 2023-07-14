@@ -9,14 +9,12 @@ using AndNet.Manager.Shared.Models.Documentation;
 using ApexCharts;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.JSInterop;
 
 namespace AndNet.Manager.Client.Pages;
 
 public partial class PlayerPage : ComponentBase
 {
     public const int DOCS_ITEMS_ON_PAGE = 10;
-    private readonly Dictionary<int, Player> _players = new();
     private Award[]? _awards;
     private Expedition[]? _expeditions;
     private PlayerLeaveReason _leaveReason = 0;
@@ -49,7 +47,7 @@ public partial class PlayerPage : ComponentBase
     public Dictionary<DateTime, PlayerStatisticsStatus>? Stats { get; set; }
 
     [Inject]
-    public IJSRuntime JSRuntime { get; set; } = null!;
+    public PlayerNicknamesService PlayerNicknamesService { get; set; } = null!;
 
     public string TimeZoneOffset
     {
@@ -141,45 +139,49 @@ public partial class PlayerPage : ComponentBase
         }
     };
 
+    public int? AwardSheetCreated { get; set; }
+    public int? ReserveCreated { get; set; }
+    public int? KickCreated { get; set; }
+
     public async Task CreateAwardSheet()
     {
-        await HttpClient.PatchAsync(
+        using HttpResponseMessage result = await HttpClient.PatchAsync(
             $"api/player/{Id}/award?awardType={NewAwardType:D}&description={Uri.EscapeDataString(NewAwardDescription)}",
             new ByteArrayContent(Array.Empty<byte>()));
         NewAwardType = 0;
         NewAwardDescription = string.Empty;
+        AwardSheetCreated = await result.Content.ReadFromJsonAsync<int>();
         StateHasChanged();
+        MainLayout.Update();
     }
 
     public async Task CreateReserve()
     {
-        await HttpClient.PatchAsync(
+        using HttpResponseMessage result = await HttpClient.PatchAsync(
             $"api/player/{Id}/reserve",
             new ByteArrayContent(Array.Empty<byte>()));
+        ReserveCreated = await result.Content.ReadFromJsonAsync<int>();
+        StateHasChanged();
+        MainLayout.Update();
     }
 
     public async Task CreateKick()
     {
-        await HttpClient.DeleteAsync($"api/player/{Id}?leaveReason={LeaveReason:D}");
+        using HttpResponseMessage result = await HttpClient.DeleteAsync($"api/player/{Id}?leaveReason={LeaveReason:D}");
         LeaveReason = 0;
+        KickCreated = await result.Content.ReadFromJsonAsync<int>();
         StateHasChanged();
+        MainLayout.Update();
     }
 
-    private async Task LoadAwardIssuers()
-    {
-        _players.Clear();
-        foreach (int playerId in _awards!.Where(x => x.IssuerId.HasValue).Select(x => x.IssuerId!.Value).Distinct())
-        {
-            Player? player = await HttpClient.GetFromJsonAsync<Player>($"api/Player/{playerId}");
-            _players.Add(playerId, player);
-        }
-    }
 
     private async Task GetAwards()
     {
         if (_awards is not null) return;
-        _awards = await HttpClient.GetFromJsonAsync<Award[]>($"api/award?playerId={Id}");
-        await LoadAwardIssuers();
+        _awards = await HttpClient.GetFromJsonAsync<Award[]>($"api/award?playerId={Id}")
+                  ?? throw new InvalidOperationException();
+        await PlayerNicknamesService.LoadNicknames(_awards.Select(x => x.IssuerId).Distinct().Where(x => x is not null)
+            .Select(x => x!.Value));
     }
 
     private async Task GetDocs()
@@ -190,21 +192,12 @@ public partial class PlayerPage : ComponentBase
         string? itemsCountString = response.Headers.FirstOrDefault(x =>
             string.Equals(x.Key, "Items-Count", StringComparison.OrdinalIgnoreCase)).Value.FirstOrDefault();
         if (int.TryParse(itemsCountString, out int itemsCount)) DocsTotalItemsCount = itemsCount;
-        Docs = await response.Content.ReadFromJsonAsync<Doc[]>();
-        await LoadDocAuthors();
+        Docs = await response.Content.ReadFromJsonAsync<Doc[]>()
+               ?? throw new InvalidOperationException();
+        await PlayerNicknamesService.LoadNicknames(Docs.Select(x => x.AuthorId).Distinct());
         StateHasChanged();
     }
 
-    private async Task LoadDocAuthors()
-    {
-        _players.Clear();
-        foreach (int playerId in Docs!.Select(x => x.AuthorId).Distinct())
-        {
-            if (_players.ContainsKey(playerId)) continue;
-            Player? player = await HttpClient.GetFromJsonAsync<Player>($"api/Player/{playerId}");
-            _players.Add(playerId, player);
-        }
-    }
 
     public async Task SetDocPage(int page)
     {
@@ -228,7 +221,7 @@ public partial class PlayerPage : ComponentBase
 
     protected async Task GetStats()
     {
-        HttpResponseMessage response = await HttpClient.GetAsync($"api/Player/{Id}/stats");
+        using HttpResponseMessage response = await HttpClient.GetAsync($"api/Player/{Id}/stats");
         if (!response.IsSuccessStatusCode) return;
         Stats = await response.Content.ReadFromJsonAsync<Dictionary<DateTime, PlayerStatisticsStatus>>()
                 ?? throw new InvalidOperationException();

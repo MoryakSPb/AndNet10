@@ -115,10 +115,10 @@ public class ActivityStatsJob : IJob
         async Task GiveAward(PlayerActivityResultNode activity, int automationId, string description)
         {
             int playerId = playerIds[activity.SteamId];
-            if (!await _databaseContext.ClanPlayers.AnyAsync(x => x.Id == playerId && x.Rank < PlayerRank.Advisor)
-                    .ConfigureAwait(false)) return;
             if (automationId == WITH_COMRADE_AUTOMATION_ID)
                 statuses[playerId] = PlayerStatisticsStatus.InSpaceEngineersWithComrade;
+            if (!await _databaseContext.ClanPlayers.AnyAsync(x => x.Id == playerId && x.Rank < PlayerRank.Advisor)
+                    .ConfigureAwait(false)) return;
             DateTime lastDate;
             try
             {

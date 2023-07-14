@@ -53,7 +53,7 @@
                                         <td>
                                             @if (award.IssuerId.HasValue)
                                             {
-                                                <a href="player/@award.IssuerId.Value">@_players[award.IssuerId.Value].ToString()</a>
+                                                <a href="player/@award.IssuerId.Value">@PlayerNicknamesService.GetFullNicknameFromCache(award.IssuerId.Value)</a>
                                             }
                                             else
                                             {
@@ -144,7 +144,7 @@
                             <td>@doc.Title</td>
                             <td>@doc.CreationDate.ToShortDateString()</td>
                             <th>
-                                <a href="/player/@doc.AuthorId">@_players[doc.AuthorId].FullNickname</a>
+                                <a href="/player/@doc.AuthorId">@PlayerNicknamesService.GetFullNicknameFromCache(doc.AuthorId)</a>
                             </th>
                         </tr>
                     }
@@ -295,6 +295,10 @@
                             </select>
                             <input type="text" class="form-control mb-1" placeholder="Описание" @bind="NewAwardDescription">
                             <button class="btn btn-success" disabled="@(NewAwardType == 0 || string.IsNullOrWhiteSpace(NewAwardDescription))" @onclick="async () => await CreateAwardSheet()">Создать наградной лист</button>
+                            @if (AwardSheetCreated is not null)
+                            {
+                                <span class="form-text">Создан документ <a href="document/@AwardSheetCreated.Value">№@AwardSheetCreated.Value</a></span>
+                            }
                         </div>
                         <div class="d-flex flex-column justify-content-between mb-2">
                             <label class="form-label">Резерв</label>
@@ -306,6 +310,10 @@
                             {
                                 <button class="btn btn-secondary" @onclick="async () => await CreateReserve()">Создать решение о переводе в резерв</button>
                             }
+                            @if (ReserveCreated is not null)
+                            {
+                                <span class="form-text">Создан документ <a href="document/@ReserveCreated.Value">№@ReserveCreated.Value</a></span>
+                            }
                         </div>
                         <div class="d-flex flex-column justify-content-between mb-2">
                             <label class="form-label">Исключение</label>
@@ -316,6 +324,10 @@
                                 <option value="@PlayerLeaveReason.Exile">@PlayerRules.LeaveReasonNames[PlayerLeaveReason.Exile]</option>
                             </select>
                             <button class="btn btn-danger" disabled="@(LeaveReason == PlayerLeaveReason.Unknown)" @onclick="async () => await CreateKick()">Создать решение о исключении</button>
+                            @if (KickCreated is not null)
+                            {
+                                <span class="form-text">Создан документ <a href="document/@KickCreated.Value">№@KickCreated.Value</a></span>
+                            }
                         </div>
                     </div>
                 }

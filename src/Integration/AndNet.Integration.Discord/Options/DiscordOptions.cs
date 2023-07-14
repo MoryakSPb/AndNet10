@@ -10,4 +10,5 @@ public class DiscordOptions
     public ulong ReserveRoleId { get; set; }
 
     public ulong LogBotChannelId { get; set; }
+    public ulong ExpeditionsCategoryId { get; set; }
 }

@@ -1,4 +1,5 @@
-﻿@page "/expedition/{id:int}/"
+﻿@attribute [Authorize(Roles = "member")]
+@page "/expedition/{id:int}/"
 @using AndNet.Manager.Shared.Models.Documentation
 <div class="accordion mb-3" id="playerAccordion">
     <div class="accordion-item">
@@ -65,7 +66,7 @@
                                 <td>@doc.Title</td>
                                 <td>@doc.CreationDate.ToShortDateString()</td>
                                 <th>
-                                    <a href="/player/@doc.AuthorId">@_players[doc.AuthorId].FullNickname</a>
+                                    <a href="/player/@doc.AuthorId">@PlayerNicknamesService.GetFullNicknameFromCache(doc.AuthorId)</a>
                                 </th>
                             </tr>
                         }
@@ -125,11 +126,15 @@
                 <InfoBlock Key="Дата конца" Value="@Expedition.EndDate.ToShortDateString()"/>
                 @if (Members.Any(x => x.Id == MeId))
                 {
-                    <button class="btn btn-danger mb-2" disabled>Запросить исключение из экспедиции</button>
+                    <button class="btn btn-danger mb-2" disabled="@(MeId == Expedition.CommanderId)" @onclick="async () => await CreateLeave()">Запросить исключение из экспедиции</button>
                 }
                 else
                 {
-                    <button class="btn btn-primary mb-2" disabled>Запросить присоединение к экспедиции</button>
+                    <button class="btn btn-primary mb-2" @onclick="async () => await CreateJoin()">Запросить присоединение к экспедиции</button>
+                }
+                @if (LeaveJoinDocId is not null)
+                {
+                    <span class="form-text">Создан документ <a href="document/@LeaveJoinDocId.Value">№@LeaveJoinDocId.Value</a></span>
                 }
                 @if (IsAdvisor)
                 {
@@ -137,22 +142,38 @@
                         <h4>Управление</h4>
                         <div class="d-flex flex-column justify-content-between mb-2">
                             <b class="form-label">Продление</b>
-                            <input type="number" min="1" class="form-control mb-1" placeholder="Количество суток…">
-                            <button class="btn btn-success" disabled>Продлить</button>
+                            <input type="number" min="0" class="form-control mb-1" placeholder="Количество суток…" @bind="ProlongDays">
+                            <button class="btn btn-success" disabled="@(ProlongDays == 0)" @onclick="async () => await CreateProlong()">Продлить</button>
+                            @if (ProlongDocId is not null)
+                            {
+                                <span class="form-text">Создан документ <a href="document/@ProlongDocId.Value">№@ProlongDocId.Value</a></span>
+                            }
                         </div>
                         <div class="d-flex flex-column justify-content-between mb-2">
                             <b class="form-label">Новый командир</b>
-                            <select class="form-select mb-1">
+                            <select class="form-select mb-1" @bind="@NewCommanderId">
                                 @foreach (Player member in Members)
                                 {
                                     <option value="@member.Id" selected="@(member.Id == Expedition.CommanderId)">@member.FullNickname</option>
                                 }
                             </select>
-                            <button class="btn btn-warning" disabled>Выдвинуть нового командира</button>
+                            <button class="btn btn-warning"
+                                    disabled="@(NewCommanderId == 0 || NewCommanderId == Expedition.CommanderId)"
+                                    @onclick="async () => await CreateTransfer()">
+                                Выдвинуть нового командира
+                            </button>
+                            @if (NewCommanderDocId is not null)
+                            {
+                                <span class="form-text">Создан документ <a href="document/@NewCommanderDocId.Value">№@NewCommanderDocId.Value</a></span>
+                            }
                         </div>
                         <div class="d-flex flex-column justify-content-between mb-2">
                             <b class="form-label">Закрытие</b>
-                            <button class="btn btn-danger" disabled>Закрыть экспедицию</button>
+                            <button class="btn btn-danger" @onclick="async () => await CreateClose()">Закрыть экспедицию</button>
+                            @if (CloseDocId is not null)
+                            {
+                                <span class="form-text">Создан документ <a href="document/@CloseDocId.Value">№@CloseDocId.Value</a></span>
+                            }
                         </div>
                     </div>
                 }

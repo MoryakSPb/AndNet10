@@ -1,41 +1,91 @@
 ﻿@using AndNet.Manager.Shared.Models.Documentation
+@using AndNet.Manager.Shared.Models.Documentation.Info
 @using AndNet.Manager.Shared.Models.Documentation.Info.Decision
-@if (Document is not null)
+@inherits AndNet.Manager.Client.Pages.Document
+@if (Doc is not null)
 {
     <div class="card mb-3">
         <div class="card-header">
-            @if (Document.ParentId is not null)
+
+            @if (Doc.ParentId is not null)
             {
                 <small>
-                    <a href="document/@Document.ParentId.Value.ToString("D")">№@Document.ParentId.Value</a>
+                    <a href="document/@Doc.ParentId.Value.ToString("D")">№@(Doc.ParentId.Value)</a>
                 </small>
             }
-            <a href="document/@Document.Id.ToString("D")">№@Document.Id</a>
+            <a href="document/@Doc.Id.ToString("D")">№@(Doc.Id)</a>
         </div>
         <div class="card-body">
-            <h5 class="card-title px-1">@Document.Title</h5>
-            <h6 class="card-subtitle text-body-secondary px-1 mb-2">@DocRules.DocNames[Document.Info?.GetType() ?? typeof(DocInfo)]</h6>
-            <table class="table table-borderless table-sm">
-                <tbody>
-                <tr>
-                    <th scope="row">Автор</th>
-                    <td>
-                        <a href="player/@Document.AuthorId">@AuthorNickname</a>
-                    </td>
-                </tr>
-                <tr>
-                    <th scope="row">Дата создания</th>
-                    <td>@Document.CreationDate.ToString("g")</td>
-                </tr>
-                @if (Document.Info is Decision)
-                {
-                }
-                </tbody>
-            </table>
+            <h5 class="card-title px-1">@Doc.Title</h5>
+            <h6 class="card-subtitle text-body-secondary px-1 mb-2">@DocRules.DocNames[Doc.Info?.GetType() ?? typeof(DocInfo)]</h6>
+            <div class="row px-2">
+                <div class="col-6">
+                    @foreach ((string name, string value, DocInfoFields.FieldType type) in Doc.GetFields())
+                    {
+                        switch (type)
+                        {
+                            case DocInfoFields.FieldType.Text:
+                                <div class="d-flex flex-row justify-content-between">
+                                    <b>@name</b>
+                                    <span class="text-end">@value</span>
+                                </div>
+                                break;
+                            case DocInfoFields.FieldType.PlayerLink:
+                                <div class="d-flex flex-row justify-content-between">
+                                    <b>@name</b>
+                                    <a href="player/@value">@PlayerNicknamesService.GetFullNicknameFromCache(int.Parse(value))</a>
+                                </div>
+                                break;
+                            case DocInfoFields.FieldType.PlayersList:
+                                break;
+                            case DocInfoFields.FieldType.ExpeditionLink:
+                                <div class="d-flex flex-row justify-content-between">
+                                    <b>@name</b>
+                                    <a href="expedition/@value">№@value</a>
+                                </div>
+                                break;
+                            case DocInfoFields.FieldType.DocLink:
+                                <div class="d-flex flex-row justify-content-between">
+                                    <b>@name</b>
+                                    <a href="document/@value">№@value</a>
+                                </div>
+                                break;
+                        }
+                    }
+                </div>
+                <div class="col-6">
+                    @if (Doc.Info is ProtocolInfo protocolInfoDetails)
+                    {
+                        <table class="table table-sm">
+                            <thead>
+                            <tr>
+                                <th>Участник</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @foreach (int memberId in protocolInfoDetails.Members)
+                            {
+                                <tr>
+                                    <td>
+                                        <a href="player/@memberId">@PlayerNicknamesService.GetFullNicknameFromCache(memberId)</a>
+                                    </td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    }
+                    @if (Doc.Info is Decision voteDecision)
+                    {
+                        <CascadingValue Value="this">
+                            <DocumentVote VoteDecision="voteDecision" DocId="Id"/>
+                        </CascadingValue>
+                    }
+                </div>
+            </div>
         </div>
         <div class="card-footer">
             <small class="text-body-secondary">
-                <i class="bi bi-eye"></i> @Document.Views
+                <i class="bi bi-eye"></i> @Doc.Views
             </small>
         </div>
     </div>

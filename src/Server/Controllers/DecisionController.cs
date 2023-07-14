@@ -4,6 +4,7 @@ using AndNet.Manager.Database.Models.Auth;
 using AndNet.Manager.Database.Models.Player;
 using AndNet.Manager.DocumentExecutor;
 using AndNet.Manager.Shared.Enums;
+using AndNet.Manager.Shared.Models.Documentation;
 using AndNet.Manager.Shared.Models.Documentation.Info.Decision;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -28,21 +29,18 @@ public class DecisionController : Controller
         _documentService = documentService;
     }
 
-    [HttpGet]
-    public async IAsyncEnumerable<int> GetNotExecuted()
+    [HttpHead("{id:int}")]
+    [ResponseCache(Duration = 60000, Location = ResponseCacheLocation.Any)]
+    public async Task<IActionResult> ExecuteSupported([FromRoute] int id)
     {
-        foreach (int id in _context.Documents.AsNoTracking().Where(x =>
-                         x.Info!.Type.StartsWith("Р") && EF.Functions.JsonContains(x.Info, @"{""IsExecuted"": null}"))
-                     .Select(x => x.Id))
-            yield return id;
-    }
-
-    [HttpGet("count")]
-    public async Task<int> GetNotExecutedCount()
-    {
-        return await _context.Documents
-            .CountAsync(x => x.Info!.Type.StartsWith("Р")
-                             && EF.Functions.JsonContains(x.Info, @"{""IsExecuted"": null}")).ConfigureAwait(false);
+        IQueryable<DbDoc> set = _context.Documents
+            .IgnoreQueryFilters()
+            .AsNoTracking();
+        Doc? doc = await set.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+        if (doc is null) return NotFound();
+        return doc.Info is not null && DocumentService.ExecuteSupported(doc.Info.GetType())
+            ? Ok(doc)
+            : NoContent();
     }
 
     [HttpPatch("{id:int}")]
@@ -99,6 +97,7 @@ public class DecisionController : Controller
             return BadRequest();
         }
 
+        _context.Update(doc).State = EntityState.Modified;
         await _context.SaveChangesAsync().ConfigureAwait(false);
         return Ok();
     }

@@ -1,4 +1,5 @@
-﻿@page "/expeditions"
+﻿@attribute [Authorize(Roles = "member")]
+@page "/expeditions"
 @layout MainLayoutWithoutAside
 
 <div class="d-flex flex-row justify-content-between align-items-center">
@@ -6,7 +7,7 @@
         <input type="checkbox" id="inputShowInactive" class="form-check-input" @bind="ShowInactive">
         <label for="inputShowInactive" class="form-check-label">Показать расформированные</label>
     </div>
-    <button class="btn btn-primary" disabled>Созвать экспедицию</button>
+    <button class="btn btn-primary" @onclick="async () => await Modal.ShowAsync()">Созвать экспедицию</button>
 </div>
 
 <table class="table">
@@ -33,7 +34,7 @@
             <tr @onclick="() => ToExpeditionPage(expedition.Id)">
                 <th scope="row">@expedition.Id.ToString()</th>
                 <td>
-                    <a href="player/@expedition.CommanderId">@_players[expedition.CommanderId].ToString()</a>
+                    <a href="player/@expedition.CommanderId">@PlayerNicknamesService.GetFullNicknameFromCache(expedition.CommanderId)</a>
                 </td>
                 <td>
                     @expedition.StartDate.ToString("d")
@@ -42,13 +43,23 @@
                     @expedition.EndDate.ToString("d")
                 </td>
                 <td>
-                    @(expedition.Players?.Length.ToString() ?? "—")
+                    @(expedition.Players?.Count.ToString() ?? "—")
                 </td>
             </tr>
         }
     }
     </tbody>
 </table>
+
+<Modal @ref="Modal" class="modal modal-lg">
+    <HeaderTemplate>
+        <h5>Создать экспедицию</h5>
+    </HeaderTemplate>
+    <BodyTemplate>
+        <ExpeditionCreateDialog/>
+    </BodyTemplate>
+</Modal>
+
 <LayoutSetter>
     <Header>
 

@@ -13,7 +13,8 @@ namespace AndNet.Manager.Client.Pages;
 public partial class ExpeditionPage : ComponentBase
 {
     public const int DOCS_ITEMS_ON_PAGE = 10;
-    private readonly Dictionary<int, Player> _players = new();
+    private int _newCommanderId;
+    private int _prolongDays;
 
     [CascadingParameter]
     public MainLayout MainLayout { get; set; } = null!;
@@ -27,8 +28,11 @@ public partial class ExpeditionPage : ComponentBase
     [Inject]
     public AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
 
+    [Inject]
+    public PlayerNicknamesService PlayerNicknamesService { get; set; } = null!;
+
     public bool IsAdvisor { get; set; }
-    public Player[] Members { get; set; } = Array.Empty<Player>();
+    public Player?[] Members { get; set; } = Array.Empty<Player>();
 
     [Parameter]
     public Expedition Expedition { get; set; }
@@ -45,10 +49,32 @@ public partial class ExpeditionPage : ComponentBase
     public bool DocsNextPageAvailable => DocsPage < DocsPagesCount;
     private int DocsPagesCount => Math.DivRem(DocsTotalItemsCount, DOCS_ITEMS_ON_PAGE, out int rem) + (rem > 0 ? 1 : 0);
 
-    private void ToPlayerPage(int id)
+    public int? LeaveJoinDocId { get; set; }
+
+    public int ProlongDays
     {
-        NavigationManager.NavigateTo($"/player/{id}");
+        get => _prolongDays;
+        set
+        {
+            _prolongDays = value;
+            MainLayout.Update();
+        }
     }
+
+    public int? ProlongDocId { get; set; }
+    public int? NewCommanderDocId { get; set; }
+
+    public int NewCommanderId
+    {
+        get => _newCommanderId;
+        set
+        {
+            _newCommanderId = value;
+            MainLayout.Update();
+        }
+    }
+
+    public int? CloseDocId { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -59,12 +85,15 @@ public partial class ExpeditionPage : ComponentBase
         if (Expedition.Players is null) throw new ArgumentNullException();
         Members = await Task.WhenAll(Expedition.Players.Select(x =>
             HttpClient.GetFromJsonAsync<Player>($"api/Player/{x}")));
+        if (Members is null || Members.Any(x => x is null)) throw new ArgumentNullException();
         Members = Members
-            .OrderByDescending(x => x.Id == Expedition.CommanderId)
+            .OrderByDescending(x => x!.Id == Expedition.CommanderId)
             .ThenByDescending(x => (x as ClanPlayer)?.Rank)
             .ThenByDescending(x => (x as ClanPlayer)?.Score ?? 0d)
-            .ThenBy(x => x.Nickname)
+            .ThenBy(x => x!.Nickname)
             .ToArray();
+        NewCommanderId = Expedition.CommanderId;
+        await SetDocPage(1);
         StateHasChanged();
         MainLayout.Update();
     }
@@ -76,20 +105,9 @@ public partial class ExpeditionPage : ComponentBase
         string? itemsCountString = response.Headers.FirstOrDefault(x =>
             string.Equals(x.Key, "Items-Count", StringComparison.OrdinalIgnoreCase)).Value.FirstOrDefault();
         if (int.TryParse(itemsCountString, out int itemsCount)) DocsTotalItemsCount = itemsCount;
-        Docs = await response.Content.ReadFromJsonAsync<Doc[]>();
-        await LoadDocAuthors();
+        Docs = await response.Content.ReadFromJsonAsync<Doc[]>() ?? throw new InvalidOperationException();
+        await PlayerNicknamesService.LoadNicknames(Docs.Select(x => x.AuthorId));
         StateHasChanged();
-    }
-
-    private async Task LoadDocAuthors()
-    {
-        _players.Clear();
-        foreach (int playerId in Docs!.Select(x => x.AuthorId).Distinct())
-        {
-            if (_players.ContainsKey(playerId)) continue;
-            Player? player = await HttpClient.GetFromJsonAsync<Player>($"api/Player/{playerId}");
-            _players.Add(playerId, player);
-        }
     }
 
     public async Task SetDocPage(int page)
@@ -115,5 +133,56 @@ public partial class ExpeditionPage : ComponentBase
         }
 
         IsAdvisor = authState.User.IsInRole("advisor");
+    }
+
+    public async Task CreateJoin()
+    {
+        using HttpResponseMessage result = await HttpClient.PatchAsync(
+            $"api/Expedition/{Id}/leave",
+            new ByteArrayContent(Array.Empty<byte>()));
+        LeaveJoinDocId = await result.Content.ReadFromJsonAsync<int>();
+        StateHasChanged();
+        MainLayout.Update();
+    }
+
+    public async Task CreateLeave()
+    {
+        using HttpResponseMessage result = await HttpClient.PatchAsync(
+            $"api/Expedition/{Id}/leave",
+            new ByteArrayContent(Array.Empty<byte>()));
+        LeaveJoinDocId = await result.Content.ReadFromJsonAsync<int>();
+        StateHasChanged();
+        MainLayout.Update();
+    }
+
+    public async Task CreateProlong()
+    {
+        using HttpResponseMessage result = await HttpClient.PatchAsync(
+            $"api/Expedition/{Id}/prolong?days={ProlongDays:D}",
+            new ByteArrayContent(Array.Empty<byte>()));
+        ProlongDocId = await result.Content.ReadFromJsonAsync<int>();
+        ProlongDays = 0;
+        StateHasChanged();
+        MainLayout.Update();
+    }
+
+    public async Task CreateTransfer()
+    {
+        using HttpResponseMessage result = await HttpClient.PatchAsync(
+            $"api/Expedition/{Id}/transfer?newCommanderId={NewCommanderId}",
+            new ByteArrayContent(Array.Empty<byte>()));
+        NewCommanderDocId = await result.Content.ReadFromJsonAsync<int>();
+        StateHasChanged();
+        MainLayout.Update();
+    }
+
+    public async Task CreateClose()
+    {
+        using HttpResponseMessage result = await HttpClient.PatchAsync(
+            $"api/Expedition/{Id}/close",
+            new ByteArrayContent(Array.Empty<byte>()));
+        CloseDocId = await result.Content.ReadFromJsonAsync<int>();
+        StateHasChanged();
+        MainLayout.Update();
     }
 }

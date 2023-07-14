@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace AndNet.Manager.Server.Controllers;
 
@@ -68,14 +69,16 @@ public class PlayerController : ControllerBase
     [ProducesResponseType(typeof(FormerClanPlayer), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ExternalPlayer), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    [ResponseCache(Duration = 150, Location = ResponseCacheLocation.Client)]
     public async Task<ActionResult<Player>> GetDbPlayer(int id)
     {
         DbPlayer? dbPlayer = await _context.Players.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id)
             .ConfigureAwait(false);
+        if (dbPlayer is null) return NotFound();
+        string eTag = $"W/\"{dbPlayer.Version:D10}\"";
+        if (Request.Headers.IfNoneMatch.ToString() == eTag) return StatusCode(StatusCodes.Status304NotModified);
+        Response.Headers.ETag = eTag;
         return dbPlayer switch
         {
-            null => NotFound(),
             DbClanPlayer clanPlayer => (ClanPlayer)clanPlayer,
             DbFormerClanPlayer formerClanPlayer => (FormerClanPlayer)formerClanPlayer,
             DbExternalPlayer externalPlayer => (ExternalPlayer)externalPlayer,
@@ -86,16 +89,13 @@ public class PlayerController : ControllerBase
     [HttpGet("{id:int}/nickname")]
     [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    [ResponseCache(Duration = 1200, Location = ResponseCacheLocation.Any)]
+    [ResponseCache(Duration = 600, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<string>> GetDbPlayerNickname(int id)
     {
         DbPlayer? dbPlayer = await _context.Players.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id)
             .ConfigureAwait(false);
-        return dbPlayer switch
-        {
-            null => NotFound(),
-            _ => Ok(dbPlayer.ToString())
-        };
+        if (dbPlayer is null) return NotFound();
+        return Ok(dbPlayer.ToString());
     }
 
     [HttpGet("{id:int}/stats")]
@@ -139,6 +139,9 @@ public class PlayerController : ControllerBase
         DbClanPlayer? player = await _context.ClanPlayers.FirstOrDefaultAsync(x => x.IdentityId == user.Id)
             .ConfigureAwait(false);
         if (player is null) return NotFound();
+        string eTag = $"W/\"{player.Version:D10}\"";
+        Response.Headers.ETag = eTag;
+        if (Request.Headers.IfNoneMatch.ToString() == eTag) return StatusCode(StatusCodes.Status304NotModified);
         return (ClanPlayer)player;
     }
 
@@ -250,15 +253,15 @@ public class PlayerController : ControllerBase
 
     [Authorize(Roles = "advisor")]
     [HttpPatch("{id}/award")]
-    [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> PatchAward([FromRoute] int id, [FromQuery] AwardType awardType,
+    public async Task<ActionResult<int>> PatchAward([FromRoute] int id, [FromQuery] AwardType awardType,
         [FromQuery] [MinLength(1)] string description)
     {
         DbClanPlayer? caller = await GetCaller().ConfigureAwait(false);
         if (caller is null) return Unauthorized();
         if (!await _context.Players.AnyAsync(x => x.Id == id).ConfigureAwait(false)) return NotFound();
-        await _context.Documents.AddAsync(new DbDoc
+        EntityEntry<DbDoc> result = await _context.Documents.AddAsync(new DbDoc
         {
             Author = caller,
             AuthorId = caller.Id,
@@ -278,13 +281,13 @@ public class PlayerController : ControllerBase
             }
         }.GenerateTitleFromBody()).ConfigureAwait(false);
         await _context.SaveChangesAsync().ConfigureAwait(false);
-        return Ok();
+        return Ok(result.Entity.Id);
     }
 
     [HttpPatch("me/reserve")]
     [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> PatchReserve()
+    public async Task<ActionResult<int>> PatchReserve()
     {
         return await PatchReserve((await GetCaller().ConfigureAwait(false))!.Id).ConfigureAwait(false);
     }
@@ -292,7 +295,7 @@ public class PlayerController : ControllerBase
     [HttpDelete("me")]
     [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Kick()
+    public async Task<ActionResult<int>> Kick()
     {
         return await Kick((await GetCaller().ConfigureAwait(false))!.Id, PlayerLeaveReason.AtWill)
             .ConfigureAwait(false);
@@ -302,14 +305,14 @@ public class PlayerController : ControllerBase
     [HttpPatch("{id}/reserve")]
     [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> PatchReserve([FromRoute] int id)
+    public async Task<ActionResult<int>> PatchReserve([FromRoute] int id)
     {
         DbClanPlayer? caller = await GetCaller().ConfigureAwait(false);
         if (caller is null) return Unauthorized();
         DbClanPlayer? target = await _context.ClanPlayers.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id)
             .ConfigureAwait(false);
         if (target is null) return NotFound();
-        await _context.Documents.AddAsync(new DbDoc
+        EntityEntry<DbDoc> entity = await _context.Documents.AddAsync(new DbDoc
         {
             Author = caller,
             AuthorId = caller.Id,
@@ -329,19 +332,19 @@ public class PlayerController : ControllerBase
             }
         }.GenerateTitleFromBody()).ConfigureAwait(false);
         await _context.SaveChangesAsync().ConfigureAwait(false);
-        return Ok();
+        return Ok(entity.Entity.Id);
     }
 
     [Authorize(Roles = "advisor")]
     [HttpDelete("{id}")]
     [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Kick([FromRoute] int id, [FromQuery] PlayerLeaveReason leaveReason)
+    public async Task<ActionResult<int>> Kick([FromRoute] int id, [FromQuery] PlayerLeaveReason leaveReason)
     {
         DbClanPlayer? caller = await GetCaller().ConfigureAwait(false);
         if (caller is null) return Unauthorized();
         if (!await _context.Players.AnyAsync(x => x.Id == id).ConfigureAwait(false)) return NotFound();
-        await _context.Documents.AddAsync(new DbDoc
+        EntityEntry<DbDoc> entity = await _context.Documents.AddAsync(new DbDoc
         {
             Author = caller,
             AuthorId = caller.Id,
@@ -360,7 +363,7 @@ public class PlayerController : ControllerBase
             }
         }.GenerateTitleFromBody()).ConfigureAwait(false);
         await _context.SaveChangesAsync().ConfigureAwait(false);
-        return Ok();
+        return Ok(entity.Entity.Id);
     }
 
     private async Task<DbClanPlayer?> GetCaller()

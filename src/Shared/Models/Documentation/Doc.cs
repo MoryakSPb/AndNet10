@@ -11,6 +11,6 @@ public record Doc
     public int? ParentId { get; set; }
     public int Views { get; set; }
     public DocInfo? Info { get; set; }
-    public virtual ImmutableArray<int> ChildIds { get; set; }
+    public virtual ImmutableArray<int> ChildIds { get; set; } = ImmutableArray<int>.Empty;
     public uint Version { get; set; }
 }

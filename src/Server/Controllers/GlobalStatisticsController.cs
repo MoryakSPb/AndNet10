@@ -12,7 +12,7 @@ namespace AndNet.Manager.Server.Controllers;
 [AllowAnonymous]
 public class GlobalStatisticsController : ControllerBase
 {
-    private static (DateTime createTime, GlobalStats cached) _globalStatsCached = (DateTime.MinValue, null!);
+    private static (DateTime date, GlobalStats stats) _stats = (DateTime.MinValue, new());
     private readonly DatabaseContext _databaseContext;
 
     public GlobalStatisticsController(DatabaseContext databaseContext)
@@ -21,13 +21,14 @@ public class GlobalStatisticsController : ControllerBase
     }
 
     [HttpGet]
-    [ResponseCache(Duration = 10800, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<GlobalStats>> Get()
     {
-        if (DateTime.UtcNow - _globalStatsCached.createTime < TimeSpan.FromHours(3))
-            return Ok(_globalStatsCached.cached);
-
         DateTime date = DateTime.UtcNow.Date.AddDays(-30);
+        string eTag = $"W/\"{date.DayOfYear:D}\"";
+        if (Request.Headers.IfNoneMatch.ToString() == eTag) return StatusCode(StatusCodes.Status304NotModified);
+        Response.Headers.ETag = eTag;
+        if (_stats.date == date) return _stats.stats;
+
         GlobalStats result = new()
         {
             AwardsIssued = await _databaseContext.Awards.CountAsync(x => x.IssueDate >= date).ConfigureAwait(false),
@@ -61,7 +62,7 @@ public class GlobalStatisticsController : ControllerBase
                 .Select(x => x.Count())
                 .MaxAsync().ConfigureAwait(false)
         };
-        _globalStatsCached = (DateTime.UtcNow, result);
+        _stats = (date, result);
         return Ok(result);
     }
 }

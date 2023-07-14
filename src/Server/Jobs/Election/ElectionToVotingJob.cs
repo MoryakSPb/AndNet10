@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using AndNet.Integration.Discord.Services;
 using AndNet.Manager.Database;
 using AndNet.Manager.Database.Models;
 using AndNet.Manager.Database.Models.Election;
@@ -16,12 +17,15 @@ namespace AndNet.Manager.Server.Jobs.Election;
 public class ElectionToVotingJob : IJob
 {
     private readonly DatabaseContext _databaseContext;
+    private readonly DiscordService _discordService;
     private readonly DocumentService _documentService;
 
-    public ElectionToVotingJob(DatabaseContext databaseContext, DocumentService documentService)
+    public ElectionToVotingJob(DatabaseContext databaseContext, DocumentService documentService,
+        DiscordService discordService)
     {
         _databaseContext = databaseContext;
         _documentService = documentService;
+        _discordService = discordService;
     }
 
     public async Task Execute(IJobExecutionContext context)
@@ -67,7 +71,8 @@ public class ElectionToVotingJob : IJob
                     Action = DecisionCouncilPlayer.PlayerAction.Generic,
                     AwardType = AwardType.Silver,
                     Description = "Участие в выборах совета в качестве избираемого",
-                    PredeterminedIssueDate = context.FireTimeUtc.UtcDateTime
+                    PredeterminedIssueDate = context.FireTimeUtc.UtcDateTime,
+                    AutomationId = 4
                 },
                 Body = new()
                 {
@@ -84,5 +89,8 @@ public class ElectionToVotingJob : IJob
         await _databaseContext.SaveChangesAsync().ConfigureAwait(false);
         foreach (DbDoc awardSheet in awardSheets)
             await _documentService.AgreeExecuteAsync(awardSheet, firstAdvisor).ConfigureAwait(false);
+        await _databaseContext.SaveChangesAsync().ConfigureAwait(false);
+        await _discordService.SendBotLogMessageAsync("Голосование на выборах началось!" + Environment.NewLine
+            + "https://andromeda-se.xyz/elections");
     }
 }
