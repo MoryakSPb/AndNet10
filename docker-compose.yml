@@ -4,7 +4,7 @@ services:
   andnet.manager.server:
     image: ${DOCKER_REGISTRY-}andnet-manager-server
     container_name: AndNet.Manager.Server
-    restart: "no"
+    restart: "always"
     ports:
       - "5080:80"
     build:
@@ -14,9 +14,11 @@ services:
   andnet.manager.database:
     image: ${DOCKER_REGISTRY-}andnet-manager-database
     container_name: AndNet.Manager.Database
-    restart: "no"
+    restart: "always"
     environment:
-      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
     volumes:

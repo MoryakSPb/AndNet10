@@ -6,6 +6,8 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
     ports:
       - "80"
+    restart: "no"
   andnet.manager.database:
     environment: 
       - POSTGRES_HOST_AUTH_METHOD=trust
+    restart: "no"
