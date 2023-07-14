@@ -72,7 +72,7 @@ public partial class DocumentVote : ComponentBase
         StateHasChanged();
         if (DocumentPage is not null)
         {
-            Doc newDoc = await HttpClient.GetFromJsonAsync<Doc>($"api/Document/{DocId}", SerializationContext.Default.Doc)
+            Doc newDoc = await HttpClient.GetFromJsonAsync<Doc>($"api/Document/{DocId}")
                          ?? throw new InvalidOperationException();
             DocumentPage.Doc = newDoc;
             DocumentPage.Update();
@@ -86,7 +86,7 @@ public partial class DocumentVote : ComponentBase
         StateHasChanged();
         if (DocumentPage is not null)
         {
-            Doc newDoc = await HttpClient.GetFromJsonAsync<Doc>($"api/Document/{DocId}", SerializationContext.Default.Doc)
+            Doc newDoc = await HttpClient.GetFromJsonAsync<Doc>($"api/Document/{DocId}")
                          ?? throw new InvalidOperationException();
             DocumentPage.Doc = newDoc;
             DocumentPage.Update();

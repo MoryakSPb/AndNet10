@@ -178,7 +178,7 @@ public partial class PlayerPage : ComponentBase
     private async Task GetAwards()
     {
         if (_awards is not null) return;
-        _awards = await HttpClient.GetFromJsonAsync<Award[]>($"api/award?playerId={Id}", SerializationContext.Default.AwardArray)
+        _awards = await HttpClient.GetFromJsonAsync<Award[]>($"api/award?playerId={Id}")
                   ?? throw new InvalidOperationException();
         await PlayerNicknamesService.LoadNicknames(_awards.Select(x => x.IssuerId).Distinct().Where(x => x is not null)
             .Select(x => x!.Value));
@@ -223,7 +223,7 @@ public partial class PlayerPage : ComponentBase
     {
         using HttpResponseMessage response = await HttpClient.GetAsync($"api/Player/{Id}/stats");
         if (!response.IsSuccessStatusCode) return;
-        Stats = await response.Content.ReadFromJsonAsync<Dictionary<DateTime, PlayerStatisticsStatus>>(SerializationContext.Default.DictionaryDateTimePlayerStatisticsStatus)
+        Stats = await response.Content.ReadFromJsonAsync<Dictionary<DateTime, PlayerStatisticsStatus>>()
                 ?? throw new InvalidOperationException();
         StateHasChanged();
     }
@@ -246,11 +246,11 @@ public partial class PlayerPage : ComponentBase
     {
         if (Id == prevId) return;
         prevId = Id;
-        Model = await HttpClient.GetFromJsonAsync<Player>($"api/Player/{Id}", SerializationContext.Default.Player);
+        Model = await HttpClient.GetFromJsonAsync<Player>($"api/Player/{Id}");
         PlayerTimeZone = Model?.TimeZone is null ? null : TimeZoneInfo.FindSystemTimeZoneById(Model.TimeZone);
         _expeditions =
             await HttpClient.GetFromJsonAsync<Expedition[]>(
-                $"api/Expedition?playerId={Id}&getDeleted=true&skip=0&take={int.MaxValue}", SerializationContext.Default.ExpeditionArray)
+                $"api/Expedition?playerId={Id}&getDeleted=true&skip=0&take={int.MaxValue}")
             ?? throw new InvalidOperationException();
         _expeditions = _expeditions
             .OrderByDescending(x => x.IsActive)

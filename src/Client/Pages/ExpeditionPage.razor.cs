@@ -80,11 +80,11 @@ public partial class ExpeditionPage : ComponentBase
     {
         await base.OnInitializedAsync();
         await GetMeId();
-        Expedition = await HttpClient.GetFromJsonAsync<Expedition>($"api/Expedition/{Id}", SerializationContext.Default.Expedition)
+        Expedition = await HttpClient.GetFromJsonAsync<Expedition>($"api/Expedition/{Id}")
                      ?? throw new ArgumentNullException();
         if (Expedition.Players is null) throw new ArgumentNullException();
         Members = await Task.WhenAll(Expedition.Players.Select(x =>
-            HttpClient.GetFromJsonAsync<Player>($"api/Player/{x}", SerializationContext.Default.Player)));
+            HttpClient.GetFromJsonAsync<Player>($"api/Player/{x}")));
         if (Members is null || Members.Any(x => x is null)) throw new ArgumentNullException();
         Members = Members
             .OrderByDescending(x => x!.Id == Expedition.CommanderId)
@@ -105,7 +105,7 @@ public partial class ExpeditionPage : ComponentBase
         string? itemsCountString = response.Headers.FirstOrDefault(x =>
             string.Equals(x.Key, "Items-Count", StringComparison.OrdinalIgnoreCase)).Value.FirstOrDefault();
         if (int.TryParse(itemsCountString, out int itemsCount)) DocsTotalItemsCount = itemsCount;
-        Docs = await response.Content.ReadFromJsonAsync<Doc[]>(SerializationContext.Default.DocArray) ?? throw new InvalidOperationException();
+        Docs = await response.Content.ReadFromJsonAsync<Doc[]>() ?? throw new InvalidOperationException();
         await PlayerNicknamesService.LoadNicknames(Docs.Select(x => x.AuthorId));
         StateHasChanged();
     }

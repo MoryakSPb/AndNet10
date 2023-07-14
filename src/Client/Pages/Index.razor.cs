@@ -34,7 +34,7 @@ public partial class Index : ComponentBase
             IsApplicationDisabled =
                 bool.Parse(
                     await JsRuntime.InvokeAsync<string?>("localStorage.getItem", "Application.IsSent") ?? "false");
-        GlobalStats = await HttpClient.GetFromJsonAsync<GlobalStats>("api/GlobalStatistics", SerializationContext.Default.GlobalStats)
+        GlobalStats = await HttpClient.GetFromJsonAsync<GlobalStats>("api/GlobalStatistics")
                       ?? throw new InvalidOperationException();
         MainLayout.Update();
         await base.OnInitializedAsync();

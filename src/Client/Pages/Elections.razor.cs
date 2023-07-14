@@ -37,10 +37,10 @@ public partial class Elections : ComponentBase
 
     protected override async Task OnInitializedAsync()
     {
-        Me = await HttpClient.GetFromJsonAsync<Player>("api/Player/me", SerializationContext.Default.Player)
+        Me = await HttpClient.GetFromJsonAsync<Player>("api/Player/me")
              ?? throw new InvalidOperationException();
 
-        Election election = await HttpClient.GetFromJsonAsync<Election>("api/Election/current", SerializationContext.Default.Election)
+        Election election = await HttpClient.GetFromJsonAsync<Election>("api/Election/current")
                             ?? throw new InvalidOperationException();
         election.ElectionEnd =
             DateTime.SpecifyKind(election.ElectionEnd, DateTimeKind.Utc).ToUniversalTime().ToLocalTime();

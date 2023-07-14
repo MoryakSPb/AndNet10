@@ -35,7 +35,7 @@ public partial class Document : ComponentBase
     {
         if (Id == _prevId) return;
         _prevId = Id;
-        Doc doc = await HttpClient.GetFromJsonAsync<Doc>($"api/Document/{Id}", SerializationContext.Default.Doc)
+        Doc doc = await HttpClient.GetFromJsonAsync<Doc>($"api/Document/{Id}")
                   ?? throw new InvalidOperationException();
 
         if (LoadBody)

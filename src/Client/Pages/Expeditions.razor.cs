@@ -29,7 +29,7 @@ public partial class Expeditions : ComponentBase
 
     protected override async Task OnInitializedAsync()
     {
-        Models = await HttpClient.GetFromJsonAsync<Expedition[]>("api/Expedition?getDeleted=true", SerializationContext.Default.ExpeditionArray)
+        Models = await HttpClient.GetFromJsonAsync<Expedition[]>("api/Expedition?getDeleted=true")
                  ?? throw new InvalidOperationException();
         await PlayerNicknamesService.LoadNicknames(Models.Select(x => x.CommanderId));
     }

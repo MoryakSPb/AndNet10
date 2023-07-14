@@ -80,7 +80,7 @@ public partial class Documents : ComponentBase
         string? itemsCountString = response.Headers.FirstOrDefault(x =>
             string.Equals(x.Key, "Items-Count", StringComparison.OrdinalIgnoreCase)).Value.FirstOrDefault();
         if (int.TryParse(itemsCountString, out int itemsCount)) DocsTotalItemsCount = itemsCount;
-        Doc[] docs = await response.Content.ReadFromJsonAsync<Doc[]>(SerializationContext.Default.DocArray) ?? throw new InvalidOperationException();
+        Doc[] docs = await response.Content.ReadFromJsonAsync<Doc[]>() ?? throw new InvalidOperationException();
         await PlayerNicknamesService.LoadNicknames(docs.Select(x => x.AuthorId));
         foreach (Doc doc in docs)
         {
