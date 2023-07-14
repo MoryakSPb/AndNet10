@@ -25,7 +25,7 @@ namespace AndNet.Manager.Shared.Models.Documentation.Info.Decision;
 [JsonDerivedType(typeof(DecisionCouncilPlayerKick), "РCИИ")]
 public record Decision : DocInfo
 {
-    public ImmutableList<Vote> Votes { get; set; } = ImmutableList<Vote>.Empty;
+    public IReadOnlyCollection<Vote> Votes { get; set; } = ImmutableList<Vote>.Empty;
     public double MinYesVotesPercent { get; set; } = 1d;
     public bool? IsExecuted { get; set; }
     public int? ExecutorId { get; set; }

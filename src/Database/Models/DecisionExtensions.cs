@@ -28,7 +28,7 @@ public static class DecisionExtensions
 
     public static DecisionCouncil GenerateVotes(this DecisionCouncil info, DatabaseContext databaseContext)
     {
-        ImmutableList<Decision.Vote> oldVotes = info.Votes;
+        ImmutableList<Decision.Vote> oldVotes = info.Votes.ToImmutableList();
         ImmutableList<Decision.Vote>.Builder newVotes = ImmutableList<Decision.Vote>.Empty.ToBuilder();
         foreach (DbClanPlayer clanPlayer in databaseContext.ClanPlayers.Where(x => x.Rank >= PlayerRank.Advisor))
         {
