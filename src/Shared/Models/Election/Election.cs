@@ -11,5 +11,5 @@ public record Election
     public int CouncilCapacity { get; set; }
     public virtual int AllVotersCount { get; set; }
     public virtual int VotedVotersCount { get; set; }
-    public virtual IImmutableList<ElectionCandidate> Candidates { get; set; } = ImmutableList<ElectionCandidate>.Empty;
+    public virtual IReadOnlyCollection<ElectionCandidate> Candidates { get; set; } = ImmutableList<ElectionCandidate>.Empty;
 }

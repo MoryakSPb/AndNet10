@@ -20,7 +20,7 @@ public record DbDoc : Doc
     [JsonIgnore]
     public IList<DbDoc> Children { get; set; } = Array.Empty<DbDoc>();
 
-    public override ImmutableArray<int> ChildIds
+    public override IReadOnlyCollection<int> ChildIds
     {
         get => Children.Select(x => x.Id).ToImmutableArray();
         set => throw new NotSupportedException();
