@@ -73,7 +73,7 @@ public partial class Players : ComponentBase
         string? itemsCountString = response.Headers.FirstOrDefault(x =>
             string.Equals(x.Key, "Items-Count", StringComparison.OrdinalIgnoreCase)).Value.FirstOrDefault();
         if (int.TryParse(itemsCountString, out int itemsCount)) TotalItemsCount = itemsCount;
-        Models = await response.Content.ReadFromJsonAsync<Player[]>()
+        Models = await response.Content.ReadFromJsonAsync<Player[]>(SerializationContext.Default.PlayerArray)
                  ?? throw new InvalidOperationException();
         _emptyNeed = ITEMS_ON_PAGE - Models.Length;
         StateHasChanged();

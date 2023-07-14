@@ -56,7 +56,7 @@ public partial class ExpeditionCreateDialog : ComponentBase
     protected override async Task OnInitializedAsync()
     {
         await GetMeId();
-        Players = await HttpClient.GetFromJsonAsync<Manager.Shared.Models.Player[]>("api/Player")
+        Players = await HttpClient.GetFromJsonAsync<Manager.Shared.Models.Player[]>("api/Player", SerializationContext.Default.PlayerArray)
                   ?? throw new InvalidOperationException();
         foreach (Manager.Shared.Models.Player player in Players)
             PlayerNicknamesService.Cache =

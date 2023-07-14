@@ -48,7 +48,7 @@ public partial class PlayerEditor : ComponentBase
     protected override async Task OnInitializedAsync()
     {
         Manager.Shared.Models.Player player =
-            await HttpClient.GetFromJsonAsync<Manager.Shared.Models.Player>("api/Player/me")
+            await HttpClient.GetFromJsonAsync<Manager.Shared.Models.Player>("api/Player/me", SerializationContext.Default.Player)
             ?? throw new InvalidOperationException();
         NewNickname = player.Nickname;
         NewRealName = player.RealName ?? string.Empty;
