@@ -186,7 +186,7 @@ public class PlayerController : ControllerBase
         if (patch.RealName is not null && player.RealName != patch.RealName)
         {
             player.RealName = string.IsNullOrWhiteSpace(player.RealName) ? null : patch.RealName;
-            if (string.IsNullOrWhiteSpace(patch.Nickname)) return BadRequest();
+            if (string.IsNullOrWhiteSpace(patch.RealName)) return BadRequest();
             await _context.Documents.AddAsync(new()
             {
                 Author = player,
