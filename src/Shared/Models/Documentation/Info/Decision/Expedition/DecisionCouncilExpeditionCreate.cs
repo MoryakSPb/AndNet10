@@ -11,6 +11,6 @@ public record DecisionCouncilExpeditionCreate : DecisionCouncil, IExpeditionId
     public int AccountablePlayerId { get; set; }
     public TimeSpan Duration { get; set; } = TimeSpan.Zero;
 
-    public ImmutableList<int> Members { get; set; } = ImmutableList<int>.Empty;
+    public IReadOnlyCollection<int> Members { get; set; } = ImmutableList<int>.Empty;
     int IExpeditionId.ExpeditionId => ExpeditionId.GetValueOrDefault();
 }
