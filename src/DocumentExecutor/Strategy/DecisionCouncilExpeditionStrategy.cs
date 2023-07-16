@@ -30,7 +30,11 @@ public class DecisionCouncilExpeditionStrategy : DocStrategy
                 DiscordRoleId = null,
                 During = new(now, now.Add(createInfo.Duration)),
                 IsMarkedForDelete = false,
-                Members = _databaseContext.Players.Join(createInfo.Members, x => x.Id, x => x, (player, id) => player)
+                Members = createInfo.Members.Join(
+                        await _databaseContext.Players.ToArrayAsync().ConfigureAwait(false),
+                        x => x, 
+                        x => x.Id, 
+                        (id, player) => player)
                     .ToList()
             }).ConfigureAwait(false);
 
