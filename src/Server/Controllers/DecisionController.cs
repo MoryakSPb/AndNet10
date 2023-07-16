@@ -21,12 +21,14 @@ public class DecisionController : Controller
     private readonly DatabaseContext _context;
     private readonly DocumentService _documentService;
     private readonly UserManager<DbUser> _userManager;
+    private readonly ILogger<DecisionController> _logger;
 
-    public DecisionController(DatabaseContext context, UserManager<DbUser> userManager, DocumentService documentService)
+    public DecisionController(DatabaseContext context, UserManager<DbUser> userManager, DocumentService documentService, ILogger<DecisionController> logger)
     {
         _context = context;
         _userManager = userManager;
         _documentService = documentService;
+        _logger = logger;
     }
 
     [HttpHead("{id:int}")]
@@ -92,8 +94,9 @@ public class DecisionController : Controller
             else
                 _documentService.DeclineExecuteAsync(doc, player);
         }
-        catch (InvalidOperationException)
+        catch (InvalidOperationException e)
         {
+            _logger.LogError(e, "Exception on decision agree");
             return BadRequest();
         }
 
