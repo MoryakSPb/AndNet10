@@ -257,7 +257,7 @@
                     <InfoBlock Key="Счёт" Value="@clanPlayer.Score.ToString("F2")"/>
                     <InfoBlock Key="Ранг" Value="@($"[{RankRules.Icons[clanPlayer.Rank]}] {RankRules.Names[clanPlayer.Rank]}")"/>
                     <InfoBlock Key="Дата вступления" Value="@clanPlayer.JoinDate.ToString("d")"/>
-                    <InfoBlock Key="В резерве" Value="@(clanPlayer.OnReserve ? "Ра" : "Нет")"/>
+                    <InfoBlock Key="В резерве" Value="@(clanPlayer.OnReserve ? "Да" : "Нет")"/>
                 }
                 @if (Model is ExternalPlayer externalPlayer)
                 {
