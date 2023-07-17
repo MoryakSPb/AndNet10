@@ -133,17 +133,17 @@ public class DecisionCouncilPlayerStrategy : DocStrategy
                     case DecisionCouncilPlayerChange.PlayerChangeProperty.Nickname:
                         await _discordService.SendBotLogMessageAsync(
                             $"Игрок <@{target.DiscordId:D}> сменил никнейм с «{oldPlayerPropertyValue}» на {target}"
-                            + $"{Environment.NewLine}{Environment.NewLine}https://andromeda-se.xyz/document/{doc.Id:D}");
+                            + $"{Environment.NewLine}{Environment.NewLine}<https://andromeda-se.xyz/document/{doc.Id:D}>");
                         break;
                     case DecisionCouncilPlayerChange.PlayerChangeProperty.RealName:
                         if (target.RealName is null)
                             await _discordService.SendBotLogMessageAsync(
                                 $"Игрок <@{target.DiscordId:D}> скрыл упоминание своего имени"
-                                + $"{Environment.NewLine}{Environment.NewLine}https://andromeda-se.xyz/document/{doc.Id:D}");
+                                + $"{Environment.NewLine}{Environment.NewLine}<https://andromeda-se.xyz/document/{doc.Id:D}>");
                         else
                             await _discordService.SendBotLogMessageAsync(
                                 $"Игрок <@{target.DiscordId:D}> теперь предпочитает имя {target.RealName} вместо «{oldPlayerPropertyValue}»"
-                                + $"{Environment.NewLine}{Environment.NewLine}https://andromeda-se.xyz/document/{doc.Id:D}");
+                                + $"{Environment.NewLine}{Environment.NewLine}<https://andromeda-se.xyz/document/{doc.Id:D}>");
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -156,27 +156,27 @@ public class DecisionCouncilPlayerStrategy : DocStrategy
                     case PlayerLeaveReason.Unknown:
                         await _discordService.SendBotLogMessageAsync(
                             $"Участие в клане игрока <@{target.DiscordId:D}>, известного для нас как «{oldPlayerPropertyValue}» было прекращено."
-                            + $"{Environment.NewLine}{Environment.NewLine}https://andromeda-se.xyz/document/{doc.Id:D}");
+                            + $"{Environment.NewLine}{Environment.NewLine}<https://andromeda-se.xyz/document/{doc.Id:D}>");
                         break;
                     case PlayerLeaveReason.AtWill:
                         await _discordService.SendBotLogMessageAsync(
                             $"Участие в клане игрока <@{target.DiscordId:D}>, известного для нас как «{oldPlayerPropertyValue}» было приостановлено согласно желанию игрока."
-                            + $"{Environment.NewLine}{Environment.NewLine}https://andromeda-se.xyz/document/{doc.Id:D}");
+                            + $"{Environment.NewLine}{Environment.NewLine}<https://andromeda-se.xyz/document/{doc.Id:D}>");
                         break;
                     case PlayerLeaveReason.Suspend:
                         await _discordService.SendBotLogMessageAsync(
                             $"Участие в клане игрока <@{target.DiscordId:D}>, известный для нас как «{oldPlayerPropertyValue}» было приостановлено. Надеемся на возвращение!.."
-                            + $"{Environment.NewLine}{Environment.NewLine}https://andromeda-se.xyz/document/{doc.Id:D}");
+                            + $"{Environment.NewLine}{Environment.NewLine}<https://andromeda-se.xyz/document/{doc.Id:D}>");
                         break;
                     case PlayerLeaveReason.Exclude:
                         await _discordService.SendBotLogMessageAsync(
                             $"Участие в клане игрока <@{target.DiscordId:D}>, известного для нас как «{oldPlayerPropertyValue}» было прекращено."
-                            + $"{Environment.NewLine}{Environment.NewLine}https://andromeda-se.xyz/document/{doc.Id:D}");
+                            + $"{Environment.NewLine}{Environment.NewLine}<https://andromeda-se.xyz/document/{doc.Id:D}>");
                         break;
                     case PlayerLeaveReason.Exile:
                         await _discordService.SendBotLogMessageAsync(
                             $"Участие в клане игрока <@{target.DiscordId:D}>, известного для нас как «{oldPlayerPropertyValue}» было прекращено, а он сам(а) объявлен(а) **врагом клана**!"
-                            + $"{Environment.NewLine}{Environment.NewLine}https://andromeda-se.xyz/document/{doc.Id:D}");
+                            + $"{Environment.NewLine}{Environment.NewLine}<https://andromeda-se.xyz/document/{doc.Id:D}>");
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -192,12 +192,12 @@ public class DecisionCouncilPlayerStrategy : DocStrategy
                     case DecisionCouncilPlayer.PlayerAction.FromReserve:
                         await _discordService.SendBotLogMessageAsync(
                             $"Игрок <@{target.DiscordId:D}> восстановлен(а) из резерва"
-                            + $"{Environment.NewLine}{Environment.NewLine}https://andromeda-se.xyz/document/{doc.Id:D}");
+                            + $"{Environment.NewLine}{Environment.NewLine}<https://andromeda-se.xyz/document/{doc.Id:D}>");
                         break;
                     case DecisionCouncilPlayer.PlayerAction.ToReserve:
                         await _discordService.SendBotLogMessageAsync(
                             $"Игрок <@{target.DiscordId:D}> переведен(а) в резерв"
-                            + $"{Environment.NewLine}{Environment.NewLine}https://andromeda-se.xyz/document/{doc.Id:D}");
+                            + $"{Environment.NewLine}{Environment.NewLine}<https://andromeda-se.xyz/document/{doc.Id:D}>");
                         break;
                     case DecisionCouncilPlayer.PlayerAction.Rehabilitation:
                         break;

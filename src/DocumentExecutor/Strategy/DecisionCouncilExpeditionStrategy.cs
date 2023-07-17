@@ -42,7 +42,7 @@ public class DecisionCouncilExpeditionStrategy : DocStrategy
             await _discordService.CreateExpeditionRoleAsync(result.Entity.Id).ConfigureAwait(false);
             await _discordService.CreateExpeditionsChannels(result.Entity.Id).ConfigureAwait(false);
             await _discordService.SendBotLogMessageAsync($"Создана новая экспедиция №{result.Entity.Id:D}!"
-                                                         + $"{Environment.NewLine}{Environment.NewLine}https://andromeda-se.xyz/document/{doc.Id:D}");
+                                                         + $"{Environment.NewLine}{Environment.NewLine}<https://andromeda-se.xyz/document/{doc.Id:D}>");
             return;
         }
 
@@ -89,12 +89,12 @@ public class DecisionCouncilExpeditionStrategy : DocStrategy
         {
             case DecisionCouncilExpeditionClose:
                 await _discordService.SendBotLogMessageAsync($"Экспедиция №{expedition.Id:D} досрочно распущена"
-                                                             + $"{Environment.NewLine}{Environment.NewLine}https://andromeda-se.xyz/document/{doc.Id:D}");
+                                                             + $"{Environment.NewLine}{Environment.NewLine}<https://andromeda-se.xyz/document/{doc.Id:D}>");
                 break;
             case DecisionCouncilExpeditionProlongation prolongationInfo:
                 await _discordService.SendBotLogMessageAsync(
                     $"Экспедиция №{expedition.Id:D} продлена на {prolongationInfo.ProlongationTime.TotalDays:F0} суток"
-                    + $"{Environment.NewLine}{Environment.NewLine}https://andromeda-se.xyz/document/{doc.Id:D}");
+                    + $"{Environment.NewLine}{Environment.NewLine}<https://andromeda-se.xyz/document/{doc.Id:D}>");
                 break;
             case DecisionCouncilExpeditionPlayer playerInfo:
                 switch (playerInfo.Action)
@@ -104,17 +104,17 @@ public class DecisionCouncilExpeditionStrategy : DocStrategy
                     case DecisionCouncilExpeditionPlayer.ExpeditionPlayerAction.Add:
                         await _discordService.SendBotLogMessageAsync(
                             $"<@{player.DiscordId:D}> теперь входит в состав экспедиции №{expedition.Id:D}"
-                            + $"{Environment.NewLine}{Environment.NewLine}https://andromeda-se.xyz/document/{doc.Id:D}");
+                            + $"{Environment.NewLine}{Environment.NewLine}<https://andromeda-se.xyz/document/{doc.Id:D}>");
                         break;
                     case DecisionCouncilExpeditionPlayer.ExpeditionPlayerAction.Remove:
                         await _discordService.SendBotLogMessageAsync(
                             $"<@{player.DiscordId:D}> более не является участником экспедиции №{expedition.Id:D}"
-                            + $"{Environment.NewLine}{Environment.NewLine}https://andromeda-se.xyz/document/{doc.Id:D}");
+                            + $"{Environment.NewLine}{Environment.NewLine}<https://andromeda-se.xyz/document/{doc.Id:D}>");
                         break;
                     case DecisionCouncilExpeditionPlayer.ExpeditionPlayerAction.ChangeCommander:
                         await _discordService.SendBotLogMessageAsync(
                             $"<@{player.DiscordId:D}> — новый командир экспедиции №{expedition.Id:D}"
-                            + $"{Environment.NewLine}{Environment.NewLine}https://andromeda-se.xyz/document/{doc.Id:D}");
+                            + $"{Environment.NewLine}{Environment.NewLine}<https://andromeda-se.xyz/document/{doc.Id:D}>");
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
