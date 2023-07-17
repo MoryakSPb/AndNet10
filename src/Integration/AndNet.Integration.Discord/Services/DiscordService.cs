@@ -253,11 +253,7 @@ public class DiscordService : IHostedService, IDisposable
         RestTextChannel channel =
             await guild.GetTextChannelAsync(_options.Value.LogBotChannelId, requestOptions).ConfigureAwait(false)
             ?? throw new InvalidOperationException("Log bot channel not found");
-        var result = await channel.SendMessageAsync(message, options: requestOptions).ConfigureAwait(false);
-        await result.ModifyAsync(properties =>
-        {
-            properties.Embeds = new(Array.Empty<Embed>());
-        }).ConfigureAwait(false);
+        await channel.SendMessageAsync(message, options: requestOptions).ConfigureAwait(false);
     }
 
     public async Task<ulong?> GetIdFromUserName(string username)
