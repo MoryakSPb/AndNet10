@@ -138,7 +138,7 @@ public partial class ExpeditionPage : ComponentBase
     public async Task CreateJoin()
     {
         using HttpResponseMessage result = await HttpClient.PatchAsync(
-            $"api/Expedition/{Id}/leave",
+            $"api/Expedition/{Id}/join",
             new ByteArrayContent(Array.Empty<byte>()));
         LeaveJoinDocId = await result.Content.ReadFromJsonAsync<int>();
         StateHasChanged();
