@@ -47,7 +47,10 @@ public class DecisionCouncilExpeditionStrategy : DocStrategy
         }
 
         if (doc.Info is not DecisionCouncilExpedition info) throw new InvalidOperationException();
-        DbExpedition expedition = await _databaseContext.Expeditions.FirstOrDefaultAsync(x => x.Id == info.ExpeditionId)
+        DbExpedition expedition = await _databaseContext.Expeditions
+                                      .Include(x => x.Members)
+                                      .Include(x => x.AccountablePlayer)
+                                      .FirstOrDefaultAsync(x => x.Id == info.ExpeditionId)
                                       .ConfigureAwait(false)
                                   ?? throw new ArgumentOutOfRangeException(nameof(doc));
         DbPlayer player = null!;
