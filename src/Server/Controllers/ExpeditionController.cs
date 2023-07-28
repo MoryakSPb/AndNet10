@@ -7,6 +7,7 @@ using AndNet.Manager.Shared.Enums;
 using AndNet.Manager.Shared.Models;
 using AndNet.Manager.Shared.Models.Documentation;
 using AndNet.Manager.Shared.Models.Documentation.Info.Decision.Expedition;
+using AngleSharp.Dom;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -82,7 +83,7 @@ public class ExpeditionController : ControllerBase
     [HttpPatch("{id:int}/join")]
     [ProducesResponseType(typeof(Expedition), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Expedition>> JoinToExpedition([FromRoute] int id)
+    public async Task<ActionResult<int>> JoinToExpedition([FromRoute] int id)
     {
         IQueryable<DbExpedition> set = _context.Expeditions
             .Include(x => x.Members)
@@ -96,7 +97,7 @@ public class ExpeditionController : ControllerBase
 
         if (dbExpedition.Members.Any(x => x.Id == player.Id)) return Conflict();
 
-        await _context.Documents.AddAsync(new()
+        EntityEntry<DbDoc> entity = await _context.Documents.AddAsync(new()
         {
             Author = player,
             CreationDate = DateTime.UtcNow,
@@ -115,7 +116,7 @@ public class ExpeditionController : ControllerBase
         }).ConfigureAwait(false);
 
         await _context.SaveChangesAsync().ConfigureAwait(false);
-        return Ok();
+        return Ok(entity.Entity.Id);
     }
 
     [HttpPost]
