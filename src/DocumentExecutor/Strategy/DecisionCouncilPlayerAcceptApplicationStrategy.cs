@@ -26,7 +26,7 @@ public class DecisionCouncilPlayerAcceptApplicationStrategy : DocStrategy
 
     public override async Task Execute(DbDoc doc, DbClanPlayer executor)
     {
-        if (doc.Info is not DecisionCouncilPlayerAwardSheet info) throw new InvalidOperationException();
+        if (doc.Info is not DecisionCouncilPlayerAcceptApplication info) throw new InvalidOperationException();
         DbPlayer target =
             await _databaseContext.Players.Include(x => x.Identity).FirstOrDefaultAsync(x => x.Id == info.PlayerId)
                 .ConfigureAwait(false)
