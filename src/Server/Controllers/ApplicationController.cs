@@ -107,6 +107,7 @@ public class ApplicationController : ControllerBase
                     Relationship = PlayerRelationship.Unknown
                 };
                 _context.ExternalPlayers.Add(player);
+                await _context.SaveChangesAsync().ConfigureAwait(false);
                 break;
         }
 
@@ -121,6 +122,7 @@ public class ApplicationController : ControllerBase
         {
             return BadRequest();
         }
+        
 
         DbDoc doc = new()
         {
@@ -145,7 +147,6 @@ public class ApplicationController : ControllerBase
             }.GenerateVotes(_context)
         };
         doc = doc.GenerateTitleFromBody();
-        await _context.SaveChangesAsync().ConfigureAwait(false);
         await _context.Documents.AddAsync(doc).ConfigureAwait(false);
         await _context.SaveChangesAsync().ConfigureAwait(false);
         return Ok();
