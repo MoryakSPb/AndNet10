@@ -1,9 +1,11 @@
 ﻿using AndNet.Integration.Discord.Services;
 using AndNet.Integration.Steam;
 using AndNet.Manager.Database;
+using AndNet.Manager.Database.Models;
 using AndNet.Manager.Database.Models.Player;
 using AndNet.Manager.Shared.Enums;
 using AndNet.Manager.Shared.Models;
+using AndNet.Manager.Shared.Models.Documentation.Info.Decision.Player;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -120,19 +122,31 @@ public class ApplicationController : ControllerBase
             return BadRequest();
         }
 
-        /*DbDocumentDecisionCouncilPlayerAcceptApplication doc = new()
+        DbDoc doc = new()
         {
-            Age = applicationRequest.Age,
-            Player = player,
-            Body = applicationRequest.Description,
-            Hours = applicationRequest.Hours,
-            Recommendation = applicationRequest.Recommendation,
-            TimeZone = timeZoneInfo,
-            Creator = player,
-            CreationDate = DateTime.UtcNow
+            AuthorId = player.Id,
+            CreationDate = DateTime.UtcNow,
+            Body = new DbDocBody()
+            {
+                Body = "# Заявка на вступление в клан" + Environment.NewLine + applicationRequest.Description,
+            },
+            Views = 0,
+            Info = new DecisionCouncilPlayerAcceptApplication()
+            {
+                Action = DecisionCouncilPlayer.PlayerAction.Generic,
+                IsExecuted = null,
+                ExecutorId = null,
+                ExecuteDate = null,
+                Age = applicationRequest.Age,
+                Hours = applicationRequest.Hours,
+                Recommendation = applicationRequest.Recommendation,
+                PlayerId = player.Id,
+                TimeZone = applicationRequest.TimeZone,
+            }.GenerateVotes(_context)
         };
-        doc.GenerateVotes(_context);
-        await _context.Documents.AddAsync(doc).ConfigureAwait(false);*/
+        doc = doc.GenerateTitleFromBody();
+        await _context.Documents.AddAsync(doc).ConfigureAwait(false);
+        
         await _context.SaveChangesAsync().ConfigureAwait(false);
         return Ok();
     }
