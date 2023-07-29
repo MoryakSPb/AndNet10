@@ -13,5 +13,5 @@ public record DecisionCouncilPlayerAcceptApplication : DecisionCouncilPlayer
     [JsonConverter(typeof(TimeZoneConverter))]
     public TimeZoneInfo? TimeZone { get; set; } = TimeZoneInfo.Utc;
 
-    public int? Age { get; set; }
+    public int? CurrentAge { get; set; }
 }

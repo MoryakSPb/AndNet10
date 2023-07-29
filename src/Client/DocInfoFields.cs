@@ -106,7 +106,7 @@ public static class DocInfoFields
                                     decisionCouncilPlayerAcceptApplication.Hours?.ToString("D") ?? "Н/Д",
                                     FieldType.Text);
                                 yield return ("Возраст",
-                                    decisionCouncilPlayerAcceptApplication.Age?.ToString("D") ?? "Н/Д", FieldType.Text);
+                                    decisionCouncilPlayerAcceptApplication.CurrentAge?.ToString("D") ?? "Н/Д", FieldType.Text);
                                 break;
                             case DecisionCouncilPlayerAwardSheet decisionCouncilPlayerAwardSheet:
                                 yield return ("Тип награды",

@@ -130,7 +130,7 @@
                 {
                     <InfoBlock Key="Рекомендация" Value="@decisionCouncilPlayerAcceptApplication.Recommendation"/>
                     <InfoBlock Key="Часов в игре" Value="@(decisionCouncilPlayerAcceptApplication.Hours?.ToString("F0") ?? "—")"/>
-                    <InfoBlock Key="Возраст" Value="@(decisionCouncilPlayerAcceptApplication.Age?.ToString("D") ?? "—")"/>
+                    <InfoBlock Key="Возраст" Value="@(decisionCouncilPlayerAcceptApplication.CurrentAge?.ToString("D") ?? "—")"/>
                 }
             }
 

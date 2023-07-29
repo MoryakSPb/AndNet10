@@ -139,7 +139,7 @@ public class ApplicationController : ControllerBase
                 IsExecuted = null,
                 ExecutorId = null,
                 ExecuteDate = null,
-                Age = applicationRequest.Age,
+                CurrentAge = applicationRequest.Age,
                 Hours = applicationRequest.Hours,
                 Recommendation = applicationRequest.Recommendation,
                 PlayerId = player.Id,
