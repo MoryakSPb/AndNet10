@@ -40,9 +40,7 @@ public class ElectionToVotingJob : IJob
             .ToAsyncEnumerable()
             .Select(x => new DbElectionVoter
             {
-                Player = x,
                 PlayerId = x.Id,
-                Election = election,
                 ElectionId = election.Id,
                 VoteDate = null
             })
@@ -60,7 +58,6 @@ public class ElectionToVotingJob : IJob
             DbDoc doc = new()
             {
                 Author = firstAdvisor,
-                Id = firstAdvisor.Id,
                 AuthorId = firstAdvisor.Id,
                 CreationDate = DateTime.UtcNow,
                 Info = new DecisionCouncilPlayerAwardSheet
