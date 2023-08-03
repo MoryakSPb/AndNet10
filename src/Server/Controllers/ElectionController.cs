@@ -218,7 +218,6 @@ public class ElectionController : Controller
             doc = new()
             {
                 Author = firstAdvisor,
-                Id = firstAdvisor.Id,
                 AuthorId = firstAdvisor.Id,
                 CreationDate = DateTime.UtcNow,
                 Info = new DecisionCouncilPlayerAwardSheet
