@@ -217,7 +217,6 @@ public class ElectionController : Controller
                 .FirstAsync(x => x.Rank == PlayerRank.FirstAdvisor).ConfigureAwait(false);
             doc = new()
             {
-                Author = firstAdvisor,
                 AuthorId = firstAdvisor.Id,
                 CreationDate = DateTime.UtcNow,
                 Info = new DecisionCouncilPlayerAwardSheet
