@@ -10,20 +10,20 @@
     </div>
     <div class="mb-3">
         <label class="form-label">Участники</label>
-        <StringListEditor AddItem="x => BattleCombatant.UnknownPlayers = BattleCombatant.UnknownPlayers.Add(x)"
-                          RemoveItem="x => BattleCombatant.UnknownPlayers = BattleCombatant.UnknownPlayers.Remove(x)"
+        <StringListEditor AddItem="x => {BattleCombatant.UnknownPlayers.Add(x); BattleCombatant.UnknownPlayers = BattleCombatant.UnknownPlayers.ToList();}"
+                          RemoveItem="x => {BattleCombatant.UnknownPlayers.Remove(x); BattleCombatant.UnknownPlayers = BattleCombatant.UnknownPlayers.ToList();}"
                           GetItems="() => BattleCombatant.UnknownPlayers"/>
     </div>
     <div class="mb-3">
         <label class="form-label">Техника</label>
-        <StringListEditor AddItem="x => BattleCombatant.Units = BattleCombatant.Units.Add(x)"
-                          RemoveItem="x => BattleCombatant.Units = BattleCombatant.Units.Remove(x)"
+        <StringListEditor AddItem="x => {BattleCombatant.Units.Add(x); BattleCombatant.Units = BattleCombatant.Units.ToList();}"
+                          RemoveItem="x => {BattleCombatant.Units.Remove(x); BattleCombatant.Units = BattleCombatant.Units.ToList();}"
                           GetItems="() => BattleCombatant.Units"/>
     </div>
     <div class="mb-3">
         <label class="form-label">Потери</label>
-        <StringListEditor AddItem="x => BattleCombatant.Casualties = BattleCombatant.Casualties.Add(x)"
-                          RemoveItem="x => BattleCombatant.Casualties = BattleCombatant.Casualties.Remove(x)"
+        <StringListEditor AddItem="x => {BattleCombatant.Casualties.Add(x); BattleCombatant.Casualties = BattleCombatant.Casualties.ToList();}"
+                          RemoveItem="x => {BattleCombatant.Casualties.Remove(x); BattleCombatant.Casualties = BattleCombatant.Casualties.ToList();}"
                           GetItems="() => BattleCombatant.Casualties"/>
     </div>
 </div>

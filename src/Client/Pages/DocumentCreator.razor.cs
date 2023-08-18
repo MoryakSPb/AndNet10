@@ -42,10 +42,12 @@ public partial class DocumentCreator : ComponentBase
 
     public IPEndPoint? EndPoint { get; set; } = new(IPAddress.Loopback, 27016);
 
-    public ImmutableList<ReportInfoBattle.BattleCombatant> BattleCombatants { get; set; } =
-        ImmutableList<ReportInfoBattle.BattleCombatant>.Empty
-            .Add(new())
-            .Add(new());
+    public List<ReportInfoBattle.BattleCombatant> BattleCombatants { get; set; } =
+        new(4)
+            {
+                new(),
+                new()
+            };
 
     public ImmutableSortedDictionary<int, Type> AvailableDocTypes => IsAdvisor
         ? new Dictionary<int, Type>

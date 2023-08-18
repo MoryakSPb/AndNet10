@@ -9,16 +9,16 @@ namespace AndNet.Manager.Shared.Models.Documentation.Info.Report;
 public record ReportInfoBattle : ReportInfo
 {
     public IPEndPoint? ServerEndPoint { get; set; }
-    public ImmutableList<BattleCombatant> Combatants { get; set; } = ImmutableList<BattleCombatant>.Empty;
+    public List<BattleCombatant> Combatants { get; set; } = new List<BattleCombatant>();
 
     public record BattleCombatant
     {
         public string Tag { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public int? CommanderId { get; set; }
-        public ImmutableList<int> Players { get; set; } = ImmutableList<int>.Empty;
-        public ImmutableList<string> UnknownPlayers { get; set; } = ImmutableList<string>.Empty;
-        public ImmutableList<string> Units { get; set; } = ImmutableList<string>.Empty;
-        public ImmutableList<string> Casualties { get; set; } = ImmutableList<string>.Empty;
+        public List<int> Players { get; set; } = new List<int>();
+        public List<string> UnknownPlayers { get; set; } = new List<string>();
+        public List<string> Units { get; set; } = new List<string>();
+        public List<string> Casualties { get; set; } = new List<string>();
     }
 }

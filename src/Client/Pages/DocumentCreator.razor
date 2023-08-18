@@ -59,12 +59,12 @@
         <div class="d-flex flex-row">
             <label class="form-label me-2">Стороны</label>
             <button class="btn btn-sm btn-success me-1"
-                    @onclick="() => BattleCombatants = BattleCombatants.Add(new())"
+                    @onclick="() => { BattleCombatants.Add(new()); BattleCombatants = BattleCombatants.ToList(); }"
                     disabled="@(BattleCombatants.Count >= 4)">
                 <i class="bi bi-plus-lg"></i>
             </button>
             <button class="btn btn-sm btn-danger"
-                    @onclick="() => BattleCombatants = BattleCombatants.RemoveAt(BattleCombatants.Count - 1)"
+                @onclick="() => { BattleCombatants.RemoveAt(BattleCombatants.Count - 1); BattleCombatants = BattleCombatants.ToList(); }"
                     disabled="@(BattleCombatants.Count <= 2)">
                 <i class="bi bi-dash-lg"></i>
             </button>
