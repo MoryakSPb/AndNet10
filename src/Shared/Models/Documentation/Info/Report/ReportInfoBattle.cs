@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Net;
 using System.Text.Json.Serialization;
+using AndNet.Manager.Shared.Converters;
 
 namespace AndNet.Manager.Shared.Models.Documentation.Info.Report;
 
@@ -8,6 +9,7 @@ namespace AndNet.Manager.Shared.Models.Documentation.Info.Report;
 [JsonDerivedType(typeof(ReportInfoBattle), "ОБ")]
 public record ReportInfoBattle : ReportInfo
 {
+    [JsonConverter(typeof(IPEndPointConverter))]
     public IPEndPoint? ServerEndPoint { get; set; }
     public List<BattleCombatant> Combatants { get; set; } = new List<BattleCombatant>();
 
