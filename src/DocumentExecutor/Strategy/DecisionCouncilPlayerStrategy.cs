@@ -175,7 +175,7 @@ public class DecisionCouncilPlayerStrategy : DocStrategy
                         break;
                     case PlayerLeaveReason.Suspend:
                         await _discordService.SendBotLogMessageAsync(
-                            $"Участие в клане игрока <@{target.DiscordId:D}>, известный для нас как «{oldPlayerPropertyValue}» было приостановлено. Надеемся на возвращение!.."
+                            $"Участие в клане игрока <@{target.DiscordId:D}>, известный для нас как «{oldPlayerPropertyValue}» было приостановлено."
                             + $"{Environment.NewLine}{Environment.NewLine}<https://andromeda-se.xyz/document/{doc.Id:D}>");
                         break;
                     case PlayerLeaveReason.Exclude:
