@@ -147,7 +147,7 @@ void ConfigureQuartz(IServiceCollectionQuartzConfigurator configurator)
 
     DateTime firstEnd = DateTime.Parse(builder.Configuration.GetRequiredSection("Elections")["FirstEndDate"]
                                        ?? throw new InvalidOperationException());
-    //firstEnd = firstEnd.ToLocalTime().ToUniversalTime();
+    firstEnd = firstEnd.ToLocalTime().ToUniversalTime();
 
     configurator.ScheduleJob<ElectionToRegistrationJob>(triggerConfigurator => triggerConfigurator
         .WithIdentity(nameof(ElectionToRegistrationJob) + "Trigger")
@@ -155,7 +155,7 @@ void ConfigureQuartz(IServiceCollectionQuartzConfigurator configurator)
         .StartAt(firstEnd.AddDays(-30))
         .WithSimpleSchedule(x => x.WithInterval(TimeSpan.FromDays(90))
             .RepeatForever()
-            .WithMisfireHandlingInstructionIgnoreMisfires()));
+            .WithMisfireHandlingInstructionFireNow()));
 
     configurator.ScheduleJob<ElectionToVotingJob>(triggerConfigurator => triggerConfigurator
         .WithIdentity(nameof(ElectionToVotingJob) + "Trigger")
@@ -163,7 +163,7 @@ void ConfigureQuartz(IServiceCollectionQuartzConfigurator configurator)
         .StartAt(firstEnd.AddDays(-15))
         .WithSimpleSchedule(x => x.WithInterval(TimeSpan.FromDays(90))
             .RepeatForever()
-            .WithMisfireHandlingInstructionIgnoreMisfires()));
+            .WithMisfireHandlingInstructionFireNow()));
 
     configurator.ScheduleJob<ElectionToResultsAnnounceJob>(triggerConfigurator => triggerConfigurator
         .WithIdentity(nameof(ElectionToResultsAnnounceJob) + "Trigger")
@@ -171,7 +171,7 @@ void ConfigureQuartz(IServiceCollectionQuartzConfigurator configurator)
         .StartAt(firstEnd.AddDays(-4))
         .WithSimpleSchedule(x => x.WithInterval(TimeSpan.FromDays(90))
             .RepeatForever()
-            .WithMisfireHandlingInstructionIgnoreMisfires()));
+            .WithMisfireHandlingInstructionFireNow()));
 
     configurator.ScheduleJob<ElectionToEndJob>(triggerConfigurator => triggerConfigurator
         .WithIdentity(nameof(ElectionToEndJob) + "Trigger")
@@ -179,5 +179,5 @@ void ConfigureQuartz(IServiceCollectionQuartzConfigurator configurator)
         .StartAt(firstEnd)
         .WithSimpleSchedule(x => x.WithInterval(TimeSpan.FromDays(90))
             .RepeatForever()
-            .WithMisfireHandlingInstructionIgnoreMisfires()));
+            .WithMisfireHandlingInstructionFireNow()));
 }
