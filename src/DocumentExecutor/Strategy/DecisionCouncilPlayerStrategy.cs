@@ -55,7 +55,7 @@ public class DecisionCouncilPlayerStrategy : DocStrategy
                 break;
             case DecisionCouncilPlayerKick kickInfo:
                 if (target is not DbClanPlayer clanPlayer) throw new InvalidOperationException();
-                foreach (DbExpedition expedition in _databaseContext.Expeditions)
+                foreach (DbExpedition expedition in _databaseContext.Expeditions.Include(x => x.Members).Where(x => x.Members.Any(y => y.Id == target.Id)))
                 {
                     expedition.Members.Remove(target);
                     if (expedition.AccountablePlayerId == kickInfo.PlayerId)
