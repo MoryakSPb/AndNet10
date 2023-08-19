@@ -55,9 +55,9 @@ public class DecisionCouncilPlayerStrategy : DocStrategy
                 break;
             case DecisionCouncilPlayerKick kickInfo:
                 if (target is not DbClanPlayer clanPlayer) throw new InvalidOperationException();
-                foreach (DbExpedition expedition in _databaseContext.Expeditions.Include(x => x.Members).Where(x => x.Members.Any(y => y.Id == target.Id)))
+                foreach (DbExpedition expedition in _databaseContext.Expeditions.Include(x => x.Members).Where(x => x.Members.Any(y => y.Id == clanPlayer.Id)))
                 {
-                    expedition.Members.Remove(target);
+                    expedition.Members.Remove(clanPlayer);
                     if (expedition.AccountablePlayerId == kickInfo.PlayerId)
                         expedition.AccountablePlayerId = kickInfo.SubstitutePlayerId;
                 }
@@ -86,8 +86,11 @@ public class DecisionCouncilPlayerStrategy : DocStrategy
                     RealName = clanPlayer.RealName,
                     RestorationAvailable =
                         kickInfo.PlayerLeaveReason is PlayerLeaveReason.AtWill or PlayerLeaveReason.Suspend,
-                    DiscordId = clanPlayer.DiscordId
+                    DiscordId = clanPlayer.DiscordId,
+                    Version = clanPlayer.Version,
                 };
+                _databaseContext.Players.Update(clanPlayer).State = EntityState.Detached;
+                _databaseContext.Players.Update(target).State = EntityState.Modified;
                 if (target.Identity is not null)
                 {
                     target.Identity.LockoutEnabled = true;
@@ -151,6 +154,13 @@ public class DecisionCouncilPlayerStrategy : DocStrategy
 
                 break;
             case DecisionCouncilPlayerKick kickInfo:
+                if (target.DiscordId is not null)
+                {
+                    await _discordService.UpdateGuildNicknameAsync(target.DiscordId.Value, null).ConfigureAwait(false);
+                    await _discordService.UpdateGuildRolesAsync(target.DiscordId.Value, (false, false, false),
+                        Enumerable.Empty<ulong>()).ConfigureAwait(false);
+                }
+                
                 switch (kickInfo.PlayerLeaveReason)
                 {
                     case PlayerLeaveReason.Unknown:
